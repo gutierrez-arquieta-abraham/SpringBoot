@@ -5,4 +5,6 @@ import com.example.demo.model.Rol;
 public interface RolService {
     // Definimos un servicio para crear el rol
     Rol crearRol(Rol rol);
+    Rol actualizarRol(Integer id, Rol rolDetalles);
+    void eliminarRol(Integer id);
 }

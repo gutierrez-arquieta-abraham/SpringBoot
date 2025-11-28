@@ -49,4 +49,17 @@ public class PedidoController {
     public ResponseEntity<List<PedidoDto>> getPedidosPorNegocio(@PathVariable Integer idLicencia) {
         return ResponseEntity.ok(pedidoService.getPedidosPorNegocio(idLicencia));
     }
+    @PutMapping("/{numOrd}")
+    public ResponseEntity<PedidoDto> actualizarPedido(
+            @PathVariable Integer numOrd,
+            @RequestBody PedidoDto pedidoDto) {
+
+        return ResponseEntity.ok(pedidoService.actualizarPedido(numOrd, pedidoDto));
+    }
+
+    @DeleteMapping("/{numOrd}")
+    public ResponseEntity<Void> eliminarPedido(@PathVariable Integer numOrd) {
+        pedidoService.eliminarPedido(numOrd);
+        return ResponseEntity.ok().build();
+    }
 }

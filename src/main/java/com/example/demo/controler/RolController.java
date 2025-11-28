@@ -4,10 +4,7 @@ import com.example.demo.model.Rol;
 import com.example.demo.service.RolService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/roles")
@@ -22,5 +19,16 @@ public class RolController {
         // Si falta el @Autowired, rolService es NULL y esta línea truena
         Rol rolGuardado = rolService.crearRol(rol);
         return ResponseEntity.ok(rolGuardado);
+    }
+    @PutMapping("/{id}")
+    public ResponseEntity<Rol> actualizarRol(@PathVariable Integer id, @RequestBody Rol rol) {
+        Rol rolActualizado = rolService.actualizarRol(id, rol);
+        return ResponseEntity.ok(rolActualizado);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarRol(@PathVariable Integer id) {
+        rolService.eliminarRol(id);
+        return ResponseEntity.ok().build(); // Retorna 200 OK
     }
 }

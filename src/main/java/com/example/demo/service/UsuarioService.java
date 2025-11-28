@@ -11,4 +11,8 @@ public interface UsuarioService {
 
     // Servicio para el login
     UsuarioDto login(LoginDto loginDto);
+    UsuarioDto actualizarUsuario(Integer id, UsuarioDto usuarioDto);
+    void actualizarContrasena(Integer id, String nuevaContrasena);
+    void eliminarUsuario(Integer id);
+    UsuarioDto getUsuarioById(Integer id);
 }

@@ -10,4 +10,6 @@ public interface UbicacionService {
 
     // El Gestor (la app) lee la ruta de un pedido
     List<UbicacionDto> getRutaPorPedido(Integer numOrd);
+    void eliminarUbicacion(Long idUbicacion);
+    List<UbicacionDto> obtenerUbicacionesActivas();
 }

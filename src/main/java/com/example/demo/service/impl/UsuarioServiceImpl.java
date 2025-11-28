@@ -51,6 +51,34 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new RuntimeException("Email o contraseña incorrectos");
         }
     }
+    @Override
+    public UsuarioDto actualizarUsuario(Integer id, UsuarioDto usuarioDto) {
+        Usuario usuarioExistente = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario ID " + id + " no encontrado"));
+
+        usuarioExistente.setNombre(usuarioDto.getNombre());
+        usuarioExistente.setEmail(usuarioDto.getEmail());
+        usuarioExistente.setRfc(usuarioDto.getRfc());
+        // NO TOCAMOS la contraseña aquí
+
+        Usuario actualizado = usuarioRepository.save(usuarioExistente);
+        return convertirAUsuarioDto(actualizado);
+    }
+
+    @Override
+    public void actualizarContrasena(Integer id, String nuevaContrasena) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario ID " + id + " no encontrado"));
+
+        // 🔑 Cifrar la nueva contraseña
+        usuario.setContrasena(passwordEncoder.encode(nuevaContrasena));
+        usuarioRepository.save(usuario);
+    }
+
+    @Override
+    public void eliminarUsuario(Integer id) {
+        usuarioRepository.deleteById(id);
+    }
 
     // --- MÉTODO PRIVADO PARA CONVERTIR A DTO ---
     private UsuarioDto convertirAUsuarioDto(Usuario usuario) {
@@ -62,5 +90,13 @@ public class UsuarioServiceImpl implements UsuarioService {
         dto.setRol(usuario.getRol().getRol()); // Obtenemos "GESTOR" o "REPARTIDOR"
         dto.setIdLicencia(usuario.getNegocio().getIdLicencia());
         return dto;
+    }
+    @Override
+    public UsuarioDto getUsuarioById(Integer id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario ID " + id + " no encontrado"));
+
+        // Asumiendo que el método convertirADto(Usuario) existe en tu clase:
+        return convertirAUsuarioDto(usuario);
     }
 }

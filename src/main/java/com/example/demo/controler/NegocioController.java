@@ -30,4 +30,20 @@ public class NegocioController {
     public ResponseEntity<List<NegocioDto>> getAllNegocios() {
         return ResponseEntity.ok(negocioService.getAllNegocios());
     }
+    // --- ENDPOINT DE ACTUALIZACIÓN ---
+    @PutMapping("/{id}")
+    public ResponseEntity<NegocioDto> actualizarNegocio(
+            @PathVariable Integer id,
+            @RequestBody NegocioDto negocioDto) {
+
+        return ResponseEntity.ok(negocioService.actualizarNegocio(id, negocioDto));
+    }
+
+    // --- ENDPOINT DE ELIMINACIÓN ---
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarNegocio(@PathVariable Integer id) {
+        negocioService.eliminarNegocio(id);
+        // Regresamos 200 OK sin contenido
+        return ResponseEntity.ok().build();
+    }
 }

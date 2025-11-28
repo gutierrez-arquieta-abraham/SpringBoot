@@ -20,4 +20,6 @@ public interface PedidoService {
 
     // El Gestor ve todos los pedidos de su negocio
     List<PedidoDto> getPedidosPorNegocio(Integer idLicencia);
+    PedidoDto actualizarPedido(Integer numOrd, PedidoDto pedidoDto);
+    void eliminarPedido(Integer numOrd);
 }

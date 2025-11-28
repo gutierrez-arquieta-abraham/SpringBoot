@@ -8,4 +8,6 @@ public interface NegocioService {
     NegocioDto crearNegocio(Negocio negocio);
     NegocioDto getNegocioById(Integer id);
     List<NegocioDto> getAllNegocios();
+    NegocioDto actualizarNegocio(Integer id, NegocioDto negocioDto);
+    void eliminarNegocio(Integer id);
 }

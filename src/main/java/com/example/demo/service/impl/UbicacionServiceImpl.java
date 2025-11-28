@@ -55,4 +55,16 @@ public class UbicacionServiceImpl implements UbicacionService {
         // (Podríamos agregar el timestamp si el Gestor lo necesita)
         return dto;
     }
+    @Override
+    public void eliminarUbicacion(Long idUbicacion) {
+        // Necesita el repositorio de ubicación
+        ubicacionRepository.deleteById(idUbicacion);
+    }
+    @Override
+    public List<UbicacionDto> obtenerUbicacionesActivas() {
+        return ubicacionRepository.findUltimasUbicaciones()
+                .stream()
+                .map(this::convertirADto)
+                .collect(Collectors.toList());
+    }
 }

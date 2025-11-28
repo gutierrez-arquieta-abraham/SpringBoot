@@ -17,4 +17,16 @@ public class RolServiceImpl implements RolService {
         // (Aquí podríamos validar que no esté duplicado, pero .save() es suficiente)
         return rolRepository.save(rol);
     }
+    @Override
+    public Rol actualizarRol(Integer id, Rol rolDetalles) {
+        Rol rolExistente = rolRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Rol ID " + id + " no encontrado"));
+
+        rolExistente.setRol(rolDetalles.getRol());
+        return rolRepository.save(rolExistente);
+    }
+    @Override
+    public void eliminarRol(Integer id) {
+        rolRepository.deleteById(id);
+    }
 }

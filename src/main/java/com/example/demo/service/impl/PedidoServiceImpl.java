@@ -109,4 +109,26 @@ public class PedidoServiceImpl implements PedidoService {
 
         return dto;
     }
+    @Override
+    public PedidoDto actualizarPedido(Integer numOrd, PedidoDto pedidoDto) {
+        Pedido pedidoExistente = pedidoRepository.findById(numOrd)
+                .orElseThrow(() -> new RuntimeException("Pedido ID " + numOrd + " no encontrado"));
+
+        // 1. Actualizar campos
+        pedidoExistente.setDescripcion(pedidoDto.getDescripcion());
+        pedidoExistente.setEstado(pedidoDto.getEstado());
+        pedidoExistente.setDestino(pedidoDto.getDestino());
+
+        // 2. Re-asignar Repartidor si el DTO trae uno nuevo (lógica compleja)
+        // Asumiendo que el DTO trae el ID o RFC del nuevo repartidor
+        // ... (Tu lógica para reasignar repartidor aquí) ...
+
+        Pedido actualizado = pedidoRepository.save(pedidoExistente);
+        return convertirADto(actualizado);
+    }
+
+    @Override
+    public void eliminarPedido(Integer numOrd) {
+        pedidoRepository.deleteById(numOrd);
+    }
 }

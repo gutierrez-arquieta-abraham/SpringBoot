@@ -36,6 +36,26 @@ public class NegocioServiceImpl implements NegocioService {
                 .map(this::convertirADto) // Llama al convertidor por cada ítem
                 .collect(Collectors.toList());
     }
+    @Override
+    public NegocioDto actualizarNegocio(Integer id, NegocioDto negocioDto) {
+        // 1. Verificar si el negocio existe
+        Negocio negocioExistente = negocioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Negocio ID " + id + " no encontrado"));
+
+        // 2. Aplicar los cambios
+        negocioExistente.setNomEmp(negocioDto.getNomEmp());
+        negocioExistente.setRfcEnc(negocioDto.getRfcEnc());
+
+        // 3. Guardar (el método save() sabe que debe actualizar porque el ID ya existe)
+        Negocio actualizado = negocioRepository.save(negocioExistente);
+        return convertirADto(actualizado);
+    }
+
+    @Override
+    public void eliminarNegocio(Integer id) {
+        // 1. Usar la función de JPA para eliminar por ID
+        negocioRepository.deleteById(id);
+    }
 
     // --- Convertidor ---
     private NegocioDto convertirADto(Negocio negocio) {

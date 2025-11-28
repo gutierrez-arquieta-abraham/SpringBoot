@@ -32,4 +32,14 @@ public class UbicacionController {
         List<UbicacionDto> ruta = ubicacionService.getRutaPorPedido(numOrd);
         return ResponseEntity.ok(ruta);
     }
+    @DeleteMapping("/{idUbicacion}")
+    public ResponseEntity<Void> eliminarUbicacion(@PathVariable Long idUbicacion) {
+        // Asumiendo que agregamos el método eliminarUbicacion al servicio
+        ubicacionService.eliminarUbicacion(idUbicacion);
+        return ResponseEntity.ok().build();
+    }
+    @GetMapping("/activos")
+    public ResponseEntity<List<UbicacionDto>> obtenerActivos() {
+        return ResponseEntity.ok(ubicacionService.obtenerUbicacionesActivas());
+    }
 }
