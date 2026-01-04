@@ -7,4 +7,5 @@ public class NegocioDto {
     private Integer idLicencia;
     private String nomEmp;
     private String rfcEnc;
+    private String codigoLicencia; // Nuevo
 }

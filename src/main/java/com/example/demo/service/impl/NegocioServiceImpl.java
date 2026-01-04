@@ -7,6 +7,7 @@ import com.example.demo.service.NegocioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,9 +18,24 @@ public class NegocioServiceImpl implements NegocioService {
 
     @Override
     public NegocioDto crearNegocio(Negocio negocio) {
-        // (Aquí puedes agregar validaciones, ej. que el RFC no exista)
+        // Si no trae código, generamos uno por defecto (Opcional)
+        if (negocio.getCodigoLicencia() == null || negocio.getCodigoLicencia().isEmpty()) {
+            // Genera algo como DIT-AB12-CD34-PL (Lógica simplificada)
+            String randomCode = "DIT-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase() +
+                    "-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase() + "-PL";
+            negocio.setCodigoLicencia(randomCode);
+        }
+
         Negocio guardado = negocioRepository.save(negocio);
         return convertirADto(guardado);
+    }
+
+    // --- NUEVO MÉTODO PARA VALIDAR ---
+    @Override
+    public NegocioDto validarLicencia(String codigoLicencia) {
+        Negocio negocio = negocioRepository.findByCodigoLicencia(codigoLicencia)
+                .orElseThrow(() -> new RuntimeException("Licencia '" + codigoLicencia + "' no encontrada"));
+        return convertirADto(negocio);
     }
 
     @Override
@@ -33,36 +49,37 @@ public class NegocioServiceImpl implements NegocioService {
     public List<NegocioDto> getAllNegocios() {
         return negocioRepository.findAll()
                 .stream()
-                .map(this::convertirADto) // Llama al convertidor por cada ítem
+                .map(this::convertirADto)
                 .collect(Collectors.toList());
     }
+
     @Override
     public NegocioDto actualizarNegocio(Integer id, NegocioDto negocioDto) {
-        // 1. Verificar si el negocio existe
         Negocio negocioExistente = negocioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Negocio ID " + id + " no encontrado"));
 
-        // 2. Aplicar los cambios
         negocioExistente.setNomEmp(negocioDto.getNomEmp());
         negocioExistente.setRfcEnc(negocioDto.getRfcEnc());
+        // También permitimos actualizar el código si es necesario
+        if (negocioDto.getCodigoLicencia() != null) {
+            negocioExistente.setCodigoLicencia(negocioDto.getCodigoLicencia());
+        }
 
-        // 3. Guardar (el método save() sabe que debe actualizar porque el ID ya existe)
         Negocio actualizado = negocioRepository.save(negocioExistente);
         return convertirADto(actualizado);
     }
 
     @Override
     public void eliminarNegocio(Integer id) {
-        // 1. Usar la función de JPA para eliminar por ID
         negocioRepository.deleteById(id);
     }
 
-    // --- Convertidor ---
     private NegocioDto convertirADto(Negocio negocio) {
         NegocioDto dto = new NegocioDto();
         dto.setIdLicencia(negocio.getIdLicencia());
         dto.setNomEmp(negocio.getNomEmp());
         dto.setRfcEnc(negocio.getRfcEnc());
+        dto.setCodigoLicencia(negocio.getCodigoLicencia()); // Mapear nuevo campo
         return dto;
     }
 }

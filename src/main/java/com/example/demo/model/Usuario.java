@@ -31,8 +31,16 @@ public class Usuario // Renombramos la clase
     @Column(name = "RFC", unique = true) // Campo NUEVO que necesitamos de POLICODELABS
     private String rfc;
 
-    // --- ¡LA MAGIA OCURRE AQUÍ! ---
+    @Column(name = "estatus")
+    private String estatus; // "DISPONIBLE", "DESCANSO", "FUERA_SERVICIO"
 
+    @Column(name = "latitud_actual")
+    private Double latitudActual;
+
+    @Column(name = "longitud_actual")
+    private Double longitudActual;
+
+    // --- ¡LA MAGIA OCURRE AQUÍ! ---
     // 1. Conexión al Rol (para saber si es Gestor o Repartidor)
     @ManyToOne
     @JoinColumn(name = "ROL_ID", nullable = false)

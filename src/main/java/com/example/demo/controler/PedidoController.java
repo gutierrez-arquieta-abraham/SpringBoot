@@ -2,11 +2,15 @@ package com.example.demo.controler;
 
 import com.example.demo.dto.PedidoDto;
 import com.example.demo.model.Pedido;
+import com.example.demo.repository.PedidoRepository;
+import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.service.PedidoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import com.example.demo.model.Usuario;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/pedidos")
@@ -27,6 +31,7 @@ public class PedidoController {
     public ResponseEntity<PedidoDto> asignarPedido(
             @PathVariable Integer numOrd,
             @PathVariable Integer idRepartidor) {
+        // Delegamos TODA la lógica al servicio (validaciones, cambios de estado, etc.)
         return ResponseEntity.ok(pedidoService.asignarRepartidor(numOrd, idRepartidor));
     }
 
@@ -62,4 +67,10 @@ public class PedidoController {
         pedidoService.eliminarPedido(numOrd);
         return ResponseEntity.ok().build();
     }
+
+    @Autowired
+    private PedidoRepository pedidoRepository;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 }

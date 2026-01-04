@@ -12,38 +12,38 @@ import java.util.Date;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "Pedidos")
+@Table(name = "pedidos")
 public class Pedido {
 
     @Id
-    @Column(name = "Num_ord")
+    @Column(name = "num_ord")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer numOrd;
 
     @Column(name = "descripcion")
     private String descripcion;
 
-    @Column(name = "Estado")
-    private String estado;
-
     @Column(name = "destino")
     private String destino;
 
+    // --- ESTA ES LA COLUMNA QUE FALTABA ---
+    @Column(name = "estado")
+    private String estado;
+    // --------------------------------------
+
     @Temporal(TemporalType.DATE)
-    @Column(name = "Fecha_de_entrega")
+    @Column(name = "fecha_de_entrega")
     private Date fechaDeEntrega;
 
     @Temporal(TemporalType.TIME)
     @Column(name = "hora_de_entrega")
     private Date horaDeEntrega;
 
-    // Conexión al Negocio que creó el pedido
     @ManyToOne
-    @JoinColumn(name = "ID_licencia", nullable = false)
+    @JoinColumn(name = "id_licencia", nullable = false)
     private Negocio negocio;
 
-    // Conexión al Repartidor (Usuario) asignado
     @ManyToOne
-    @JoinColumn(name = "ID_USUARIO_REP") // Puede ser null si no está asignado
+    @JoinColumn(name = "id_usuario_rep")
     private Usuario repartidorAsignado;
 }

@@ -11,17 +11,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "Negocio")
+@Table(name = "negocio")
 public class Negocio {
 
     @Id
-    @Column(name = "ID_licencia")
+    @Column(name = "id_licencia")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idLicencia;
 
     @Column(name = "nom_emp")
     private String nomEmp;
 
-    @Column(name = "RFC_enc", unique = true)
+    @Column(name = "rfc_enc", unique = true)
     private String rfcEnc;
+
+    // --- NUEVO CAMPO ---
+    @Column(name = "codigo_licencia", unique = true)
+    private String codigoLicencia;
 }

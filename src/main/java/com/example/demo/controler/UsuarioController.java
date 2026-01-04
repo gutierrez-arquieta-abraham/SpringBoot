@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -21,12 +23,22 @@ public class UsuarioController {
     // POST /api/usuarios/login
     @PostMapping("/login")
     public ResponseEntity<UsuarioDto> login(@RequestBody LoginDto loginDto) {
+        // --- 🕵️‍♂️ ZONA DE ESPIONAJE (BORRAR DESPUÉS) ---
+        System.out.println("------------------------------------------------");
+        System.out.println("🔍 INTENTO DE LOGIN RECIBIDO");
+        System.out.println("📧 Email recibido: '" + loginDto.getEmail() + "'");
+        System.out.println("🔑 Password recibido: '" + loginDto.getContrasena() + "'");
+        // ------------------------------------------------
+
         try {
             UsuarioDto usuarioDto = usuarioService.login(loginDto);
+            System.out.println("✅ ¡Login Exitoso!");
             return ResponseEntity.ok(usuarioDto);
         } catch (RuntimeException e) {
-            // Login fallido (email o pass incorrectos)
-            return ResponseEntity.status(401).build(); // 401 Unauthorized
+            // Imprimimos el error real en la consola para verlo nosotros
+            System.out.println("❌ ERROR LOGIN: " + e.getMessage());
+            e.printStackTrace(); // <-- ESTO NOS DIRÁ SI ES "NO ENCONTRADO" O "PASSWORD MAL"
+            return ResponseEntity.status(401).build();
         }
     }
 
@@ -82,5 +94,40 @@ public class UsuarioController {
         // Asumiendo que agregamos el método getUsuarioById al servicio
         UsuarioDto usuarioDto = usuarioService.getUsuarioById(id);
         return ResponseEntity.ok(usuarioDto);
+    }
+    @PutMapping("/{id}/estatus/{nuevoEstatus}")
+    public ResponseEntity<Void> cambiarEstatus(
+            @PathVariable Integer id,
+            @PathVariable String nuevoEstatus) {
+
+        usuarioService.cambiarEstatus(id, nuevoEstatus);
+        return ResponseEntity.ok().build();
+    }
+    // PATCH /api/usuarios/{id}/ubicacion?lat=19.4326&lon=-99.1332
+    @PatchMapping("/{id}/ubicacion")
+    public ResponseEntity<Void> actualizarUbicacion(
+            @PathVariable Integer id,
+            @RequestParam Double lat,
+            @RequestParam Double lon) {
+
+        usuarioService.actualizarUbicacionRepartidor(id, lat, lon);
+        return ResponseEntity.ok().build();
+    }
+    // GET /api/usuarios/negocio/1/repartidores
+    @GetMapping("/negocio/{idLicencia}/repartidores")
+    public ResponseEntity<List<UsuarioDto>> getRepartidoresPorNegocio(@PathVariable Integer idLicencia) {
+        // ¡Ahora llamamos al SERVICIO, no al repositorio!
+        return ResponseEntity.ok(usuarioService.obtenerRepartidoresPorNegocio(idLicencia));
+    }
+
+    // Método auxiliar si no lo tienes público en el servicio
+    private UsuarioDto convertirAUsuarioDto(Usuario usuario) {
+        UsuarioDto dto = new UsuarioDto();
+        dto.setId(usuario.getId());
+        dto.setNombre(usuario.getNombre());
+        dto.setEmail(usuario.getEmail());
+        dto.setRol(usuario.getRol().getRol());
+        dto.setIdLicencia(usuario.getNegocio().getIdLicencia());
+        return dto;
     }
 }

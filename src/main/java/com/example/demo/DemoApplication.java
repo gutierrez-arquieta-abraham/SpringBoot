@@ -13,12 +13,4 @@ public class DemoApplication {
 		SpringApplication.run(DemoApplication.class, args);
 	}
 
-	// --- PÉGALE ESTE MÉTODO AQUÍ ---
-	@Bean // Le dice a Spring que este método "crea" un objeto para inyectar
-	public PasswordEncoder passwordEncoder() {
-		// Le damos la implementación específica que queremos usar: BCrypt
-		return new BCryptPasswordEncoder();
-	}
-	// --- FIN DEL MÉTODO ---
-
 }

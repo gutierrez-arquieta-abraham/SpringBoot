@@ -14,32 +14,27 @@ public class UbicacionController {
     @Autowired
     private UbicacionService ubicacionService;
 
-    // --- ENDPOINT DE ESCRITURA ---
-    // (POST /api/ubicacion)
-    // La app del Repartidor llamará a esto cada X segundos
     @PostMapping
     public ResponseEntity<Void> guardarUbicacion(@RequestBody UbicacionDto ubicacionDto) {
         ubicacionService.guardarUbicacion(ubicacionDto);
-        // Devolvemos un 200 OK vacío.
         return ResponseEntity.ok().build();
     }
 
-    // --- ENDPOINT DE LECTURA ---
-    // (GET /api/ubicacion/pedido/10)
-    // La app del Gestor llama a esto para dibujar la ruta del pedido 10
     @GetMapping("/pedido/{numOrd}")
     public ResponseEntity<List<UbicacionDto>> getRutaDelPedido(@PathVariable Integer numOrd) {
-        List<UbicacionDto> ruta = ubicacionService.getRutaPorPedido(numOrd);
-        return ResponseEntity.ok(ruta);
+        return ResponseEntity.ok(ubicacionService.getRutaPorPedido(numOrd));
     }
+
+    // --- NUEVO ENDPOINT PARA EL MAPA ---
+    // GET /api/ubicacion/activos
+    @GetMapping("/activos")
+    public ResponseEntity<List<UbicacionDto>> getActivos() {
+        return ResponseEntity.ok(ubicacionService.getRepartidoresActivos());
+    }
+
     @DeleteMapping("/{idUbicacion}")
     public ResponseEntity<Void> eliminarUbicacion(@PathVariable Long idUbicacion) {
-        // Asumiendo que agregamos el método eliminarUbicacion al servicio
         ubicacionService.eliminarUbicacion(idUbicacion);
         return ResponseEntity.ok().build();
-    }
-    @GetMapping("/activos")
-    public ResponseEntity<List<UbicacionDto>> obtenerActivos() {
-        return ResponseEntity.ok(ubicacionService.obtenerUbicacionesActivas());
     }
 }

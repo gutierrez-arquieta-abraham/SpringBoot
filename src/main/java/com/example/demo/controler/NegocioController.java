@@ -15,9 +15,15 @@ public class NegocioController {
     @Autowired
     private NegocioService negocioService;
 
+    // --- NUEVO ENDPOINT PARA VALIDAR ---
+    // GET /api/negocios/validar/DIT-XXXX-XXXX-PL
+    @GetMapping("/validar/{codigo}")
+    public ResponseEntity<NegocioDto> validarLicencia(@PathVariable String codigo) {
+        return ResponseEntity.ok(negocioService.validarLicencia(codigo));
+    }
+
     @PostMapping
     public ResponseEntity<NegocioDto> crearNegocio(@RequestBody Negocio negocio) {
-        // (Sería mejor recibir un DTO, pero esto es más simple)
         return ResponseEntity.ok(negocioService.crearNegocio(negocio));
     }
 
@@ -30,20 +36,17 @@ public class NegocioController {
     public ResponseEntity<List<NegocioDto>> getAllNegocios() {
         return ResponseEntity.ok(negocioService.getAllNegocios());
     }
-    // --- ENDPOINT DE ACTUALIZACIÓN ---
+
     @PutMapping("/{id}")
     public ResponseEntity<NegocioDto> actualizarNegocio(
             @PathVariable Integer id,
             @RequestBody NegocioDto negocioDto) {
-
         return ResponseEntity.ok(negocioService.actualizarNegocio(id, negocioDto));
     }
 
-    // --- ENDPOINT DE ELIMINACIÓN ---
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarNegocio(@PathVariable Integer id) {
         negocioService.eliminarNegocio(id);
-        // Regresamos 200 OK sin contenido
         return ResponseEntity.ok().build();
     }
 }
