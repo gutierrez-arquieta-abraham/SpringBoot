@@ -37,4 +37,5 @@ public class UbicacionController {
         ubicacionService.eliminarUbicacion(idUbicacion);
         return ResponseEntity.ok().build();
     }
+
 }

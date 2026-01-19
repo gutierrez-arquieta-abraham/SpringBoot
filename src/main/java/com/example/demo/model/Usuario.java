@@ -46,8 +46,8 @@ public class Usuario // Renombramos la clase
     @JoinColumn(name = "ROL_ID", nullable = false)
     private Rol rol; // Usamos tu clase Rol.java
 
-    // 2. Conexión al Negocio (para saber a qué empresa pertenece)
     @ManyToOne
-    @JoinColumn(name = "ID_LICENCIA", nullable = false)
-    private Negocio negocio; // (Necesitaremos crear la entidad 'Negocio.java')
+    @JoinColumn(name = "ID_LICENCIA", nullable = true) // <--- CAMBIA ESTO A TRUE
+    private Negocio negocio;
+
 }

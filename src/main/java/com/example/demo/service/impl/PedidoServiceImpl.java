@@ -1,24 +1,29 @@
 package com.example.demo.service.impl;
 
 import com.example.demo.dto.PedidoDto;
-import com.example.demo.dto.UbicacionDto; // Necesario para manejar coords
 import com.example.demo.model.Negocio;
 import com.example.demo.model.Pedido;
 import com.example.demo.model.Usuario;
 import com.example.demo.repository.NegocioRepository;
 import com.example.demo.repository.PedidoRepository;
+import com.example.demo.repository.UbicacionPedidoRepository;
 import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.service.PedidoService;
-import com.example.demo.service.UbicacionService; // Necesitamos consultar ubicaciones
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // Importación única
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional // ✅ Esto permite borrar datos (GPS) sin errores
 public class PedidoServiceImpl implements PedidoService {
 
+    @Autowired
+    private UbicacionPedidoRepository ubicacionPedidoRepository;
     @Autowired
     private PedidoRepository pedidoRepository;
     @Autowired
@@ -26,92 +31,48 @@ public class PedidoServiceImpl implements PedidoService {
     @Autowired
     private NegocioRepository negocioRepository;
 
-    @Autowired
-    private UbicacionService ubicacionService; // Inyectamos el servicio de ubicación
-
-    // Coordenadas fijas del Negocio (Popotla) - Idealmente esto iría en la tabla Negocio
     private static final double NEGOCIO_LAT = 19.451840;
     private static final double NEGOCIO_LON = -99.172550;
 
     @Override
     public PedidoDto crearPedido(Pedido nuevoPedido) {
-        Negocio negocio = negocioRepository.findById(nuevoPedido.getNegocio().getIdLicencia())
-                .orElseThrow(() -> new RuntimeException("Negocio no encontrado"));
-
-        nuevoPedido.setNegocio(negocio);
-        nuevoPedido.setEstado("PENDIENTE");
-
-        // Guardamos primero para tener un ID
-        Pedido guardado = pedidoRepository.save(nuevoPedido);
-
-        // --- ASIGNACIÓN AUTOMÁTICA ---
-        // Intentamos buscar un repartidor cercano de inmediato
-        intentarAsignacionAutomatica(guardado);
-
-        return convertirADto(guardado);
-    }
-
-    @Override
-    public PedidoDto asignarRepartidor(Integer numOrd, Integer idRepartidor) {
-        // 1. Buscar Pedido
-        Pedido pedido = pedidoRepository.findById(numOrd)
-                .orElseThrow(() -> new RuntimeException("Pedido " + numOrd + " no encontrado"));
-
-        // 2. Validar que el pedido no tenga ya un repartidor (Opcional, según tus reglas)
-        if (pedido.getRepartidorAsignado() != null) {
-            throw new RuntimeException("El pedido ya tiene al repartidor " + pedido.getRepartidorAsignado().getNombre());
+        // Validación del Negocio
+        if (nuevoPedido.getNegocio() != null && nuevoPedido.getNegocio().getIdLicencia() != null) {
+            Negocio negocioReal = negocioRepository.findById(nuevoPedido.getNegocio().getIdLicencia())
+                    .orElseThrow(() -> new RuntimeException("Negocio no encontrado"));
+            nuevoPedido.setNegocio(negocioReal);
         }
 
-        // 3. Buscar Repartidor y Validar Estatus
-        Usuario repartidor = usuarioRepository.findById(idRepartidor)
-                .orElseThrow(() -> new RuntimeException("Repartidor " + idRepartidor + " no encontrado"));
+        // Estado inicial obligatorio: PENDIENTE
+        nuevoPedido.setEstadoReal("PENDIENTE");
+        nuevoPedido.setEstatus("PENDIENTE");
 
-        // ¡Importante! Verificar que sea del mismo negocio
-        if (!repartidor.getNegocio().getIdLicencia().equals(pedido.getNegocio().getIdLicencia())) {
-            throw new RuntimeException("El repartidor no pertenece al negocio del pedido");
-        }
+        Pedido pedidoGuardado = pedidoRepository.save(nuevoPedido);
 
-        // 4. Asignar y cambiar estado
-        pedido.setRepartidorAsignado(repartidor);
-        pedido.setEstado("EN_CAMINO"); // O "ASIGNADO" si prefieres un paso intermedio
+        // 🛑 HE COMENTADO ESTO PARA QUE NO SE ASIGNE SOLO AL ID 6
+        // pedidoGuardado = intentarAsignacionAutomatica(pedidoGuardado);
 
-        // 5. Guardar
-        Pedido guardado = pedidoRepository.save(pedido);
-
-        // (Opcional) Aquí podrías notificar al repartidor si tuvieras sockets/firebase
-
-        return convertirADto(guardado);
+        return convertirADto(pedidoGuardado);
     }
 
-    private void intentarAsignacionAutomatica(Pedido pedido) {
-        // 1. Obtener repartidores del MISMO negocio que estén DISPONIBLES
+    // Este método ya no se usa automáticamente, pero lo dejamos por si lo quieres usar después
+    private Pedido intentarAsignacionAutomatica(Pedido pedido) {
         List<Usuario> repartidoresCandidatos = usuarioRepository.findByNegocio_IdLicenciaAndRol_Rol(
-                pedido.getNegocio().getIdLicencia(), "REPARTIDOR"); // Asegúrate de filtrar por Estatus="DISPONIBLE" si puedes
+                pedido.getNegocio().getIdLicencia(), "REPARTIDOR");
 
         Usuario mejorCandidato = null;
         double menorDistancia = Double.MAX_VALUE;
         double RADIO_MAXIMO_KM = 10.0;
-
-        // Coordenadas del Negocio (Donde se recoge el pedido)
-        // Idealmente usa: pedido.getNegocio().getLatitud()... por ahora usaremos las constantes que tenías
         double origenLat = NEGOCIO_LAT;
         double origenLon = NEGOCIO_LON;
 
-        System.out.println("--- Buscando Repartidor Automático ---");
-
         for (Usuario repartidor : repartidoresCandidatos) {
-            // 2. Validar: ¿Está disponible? ¿Tiene ubicación registrada?
             if ("DISPONIBLE".equals(repartidor.getEstatus()) &&
                     repartidor.getLatitudActual() != null &&
                     repartidor.getLongitudActual() != null) {
 
-                // 3. Calcular distancia entre el Negocio y el Repartidor
-                double distancia = calcularDistancia(
-                        origenLat, origenLon,
-                        repartidor.getLatitudActual(), repartidor.getLongitudActual()
-                );
-
-                System.out.println("Candidato: " + repartidor.getNombre() + " a " + String.format("%.2f", distancia) + "km");
+                double distancia = calcularDistancia(origenLat, origenLon,
+                        repartidor.getLatitudActual(), repartidor.getLongitudActual());
 
                 if (distancia < menorDistancia && distancia <= RADIO_MAXIMO_KM) {
                     menorDistancia = distancia;
@@ -120,25 +81,92 @@ public class PedidoServiceImpl implements PedidoService {
             }
         }
 
-        // 4. Asignar si encontramos a alguien
         if (mejorCandidato != null) {
             pedido.setRepartidorAsignado(mejorCandidato);
-            pedido.setEstado("EN_CAMINO"); // O "ASIGNADO"
+            pedido.setEstadoReal("EN_CURSO"); // OJO: Si usas esto, cambia a EN_CURSO
+            pedido.setEstatus("EN_CURSO");
 
-            // ¡Importante! Cambiar estatus del repartidor a OCUPADO para que no le caigan 2 pedidos
             mejorCandidato.setEstatus("OCUPADO");
             usuarioRepository.save(mejorCandidato);
-
-            pedidoRepository.save(pedido);
-            System.out.println("¡ASIGNADO A: " + mejorCandidato.getNombre() + "!");
-        } else {
-            System.out.println("No hay repartidores disponibles cerca.");
+            return pedidoRepository.save(pedido);
         }
+        return pedido;
     }
 
-    // Fórmula de Haversine para calcular distancia en KM
+    @Override
+    public PedidoDto asignarRepartidor(Integer numOrd, Integer idRepartidor) {
+        Pedido pedido = pedidoRepository.findById(numOrd)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
+        Usuario repartidor = usuarioRepository.findById(idRepartidor)
+                .orElseThrow(() -> new RuntimeException("Repartidor no encontrado"));
+
+        pedido.setRepartidorAsignado(repartidor);
+        // Cuando tú lo asignas manualmente, pasa a EN_CAMINO
+        pedido.setEstadoReal("EN_CAMINO");
+        pedido.setEstatus("EN_CAMINO");
+
+        repartidor.setEstatus("OCUPADO");
+        usuarioRepository.save(repartidor);
+
+        return convertirADto(pedidoRepository.save(pedido));
+    }
+
+    @Override
+    public PedidoDto actualizarEstatus(Integer idPedido, String nuevoEstatus) {
+        Pedido pedido = pedidoRepository.findById(idPedido)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
+
+        pedido.setEstadoReal(nuevoEstatus);
+        pedido.setEstatus(nuevoEstatus);
+
+        if ("ENTREGADO".equalsIgnoreCase(nuevoEstatus)) {
+            pedido.setFechaEntrega(LocalDate.now());
+            pedido.setHoraEntrega(LocalTime.now());
+
+            if (pedido.getRepartidorAsignado() != null) {
+                Usuario repartidor = pedido.getRepartidorAsignado();
+                repartidor.setEstatus("DISPONIBLE"); // Liberamos al repartidor
+                usuarioRepository.save(repartidor);
+            }
+        }
+
+        // BORRAR RASTRO GPS (Ahora seguro gracias a @Transactional)
+        if ("ENTREGADO".equalsIgnoreCase(nuevoEstatus) || "COMPLETADO".equalsIgnoreCase(nuevoEstatus)) {
+            ubicacionPedidoRepository.deleteByPedido_NumOrd(idPedido);
+        }
+
+        return convertirADto(pedidoRepository.save(pedido));
+    }
+
+    @Override
+    public PedidoDto actualizarEstado(Integer numOrd, String nuevoEstado) {
+        return actualizarEstatus(numOrd, nuevoEstado);
+    }
+
+    @Override
+    public List<PedidoDto> obtenerPedidosPorRepartidor(Integer idRepartidor) {
+        return pedidoRepository.findByRepartidorAsignadoIdAndEstadoReal(idRepartidor, "EN_CAMINO")
+                .stream().map(this::convertirADto).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<PedidoDto> getPedidosPorNegocio(Integer idLicencia) {
+        return pedidoRepository.findByNegocio_IdLicencia(idLicencia)
+                .stream().map(this::convertirADto).collect(Collectors.toList());
+    }
+
+    @Override
+    public void eliminarPedido(Integer numOrd) {
+        pedidoRepository.deleteById(numOrd);
+    }
+
+    @Override
+    public PedidoDto actualizarPedido(Integer numOrd, PedidoDto dto) {
+        return null;
+    }
+
     private double calcularDistancia(double lat1, double lon1, double lat2, double lon2) {
-        final int R = 6371; // Radio de la tierra en km
+        final int R = 6371;
         double latDistance = Math.toRadians(lat2 - lat1);
         double lonDistance = Math.toRadians(lon2 - lon1);
         double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
@@ -149,62 +177,41 @@ public class PedidoServiceImpl implements PedidoService {
     }
 
     @Override
-    public PedidoDto actualizarEstado(Integer numOrd, String nuevoEstado) {
-        Pedido pedido = pedidoRepository.findById(numOrd)
-                .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
-
-        pedido.setEstado(nuevoEstado);
-
-        Pedido guardado = pedidoRepository.save(pedido);
-        return convertirADto(guardado);
+    public List<PedidoDto> obtenerHistorialRepartidor(Integer idRepartidor) {
+        List<Pedido> pedidos = pedidoRepository.findHistorialPorRepartidor(idRepartidor);
+        return pedidos.stream().map(this::convertirADto).collect(Collectors.toList());
     }
 
     @Override
-    public List<PedidoDto> getPedidosPorRepartidor(Integer idRepartidor) {
-        return pedidoRepository.findByRepartidorAsignado_Id(idRepartidor)
-                .stream()
-                .map(this::convertirADto)
-                .collect(Collectors.toList());
+    public List<PedidoDto> obtenerHistorialNegocio(Integer idLicencia) {
+        List<Pedido> pedidos = pedidoRepository.findHistorialPorNegocio(idLicencia);
+        return pedidos.stream().map(this::convertirADto).collect(Collectors.toList());
     }
 
-    @Override
-    public List<PedidoDto> getPedidosPorNegocio(Integer idLicencia) {
-        return pedidoRepository.findByNegocio_IdLicencia(idLicencia)
-                .stream()
-                .map(this::convertirADto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public PedidoDto actualizarPedido(Integer numOrd, PedidoDto pedidoDto) {
-        Pedido pedido = pedidoRepository.findById(numOrd)
-                .orElseThrow(() -> new RuntimeException("No encontrado"));
-
-        pedido.setDescripcion(pedidoDto.getDescripcion());
-        pedido.setDestino(pedidoDto.getDestino());
-        return convertirADto(pedidoRepository.save(pedido));
-    }
-
-    @Override
-    public void eliminarPedido(Integer numOrd) {
-        pedidoRepository.deleteById(numOrd);
-    }
-
+    // --- CONVERSOR A DTO ---
     private PedidoDto convertirADto(Pedido pedido) {
         PedidoDto dto = new PedidoDto();
+
         dto.setNumOrd(pedido.getNumOrd());
         dto.setDescripcion(pedido.getDescripcion());
-        dto.setEstado(pedido.getEstado());
+        dto.setEstadoReal(pedido.getEstadoReal());
+        dto.setEstatus(pedido.getEstatus());
         dto.setDestino(pedido.getDestino());
-        dto.setFechaDeEntrega(pedido.getFechaDeEntrega());
 
-        dto.setIdLicencia(pedido.getNegocio().getIdLicencia());
-        dto.setNombreNegocio(pedido.getNegocio().getNomEmp());
+        if (pedido.getNegocio() != null) {
+            dto.setIdLicencia(pedido.getNegocio().getIdLicencia());
+            dto.setNombreNegocio(pedido.getNegocio().getNomEmp());
+        }
 
         if (pedido.getRepartidorAsignado() != null) {
             dto.setIdRepartidor(pedido.getRepartidorAsignado().getId());
             dto.setNombreRepartidor(pedido.getRepartidorAsignado().getNombre());
+            dto.setLatitud(pedido.getRepartidorAsignado().getLatitudActual());
+            dto.setLongitud(pedido.getRepartidorAsignado().getLongitudActual());
         }
+
+        if (pedido.getFechaEntrega() != null) dto.setFechaEntrega(pedido.getFechaEntrega().toString());
+        if (pedido.getHoraEntrega() != null) dto.setHoraEntrega(pedido.getHoraEntrega().toString());
 
         return dto;
     }

@@ -26,7 +26,9 @@ public interface UsuarioService {
 
     // Vincula un repartidor/gestor a un negocio específico
     void vincularNegocio(Integer idUsuario, Integer idLicencia);
-
+    UsuarioDto vincularRepartidorPorCodigo(Integer idUsuario, String codigoConexion);
+    UsuarioDto actualizarEstatus(Integer idUsuario, String nuevoEstatus);
+    void actualizarUbicacion(Integer idRepartidor, Double latitud, Double longitud);
     // --- ¡NUEVO! Cambia el estado del repartidor (Disponible, Descanso, etc.) ---
     void cambiarEstatus(Integer id, String nuevoEstatus);
     void actualizarUbicacionRepartidor(Integer idUsuario, Double lat, Double lon);

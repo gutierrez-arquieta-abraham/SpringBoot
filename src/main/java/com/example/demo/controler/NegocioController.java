@@ -43,6 +43,27 @@ public class NegocioController {
             @RequestBody NegocioDto negocioDto) {
         return ResponseEntity.ok(negocioService.actualizarNegocio(id, negocioDto));
     }
+    @GetMapping("/propietario")
+    public ResponseEntity<NegocioDto> getNegocioPorEmail(@RequestParam String email) {
+        try {
+            NegocioDto negocio = negocioService.obtenerNegocioPorEmailUsuario(email);
+            return ResponseEntity.ok(negocio);
+        } catch (Exception e) {
+            // Si no se encuentra, devolvemos 404 para que Android sepa
+            return ResponseEntity.notFound().build();
+        }
+    }
+    @GetMapping("/codigo/{codigo}")
+    public ResponseEntity<Integer> validarCodigoLicencia(@PathVariable String codigo) {
+        // El servicio busca el VARCHAR "DIT-..." y nos da el ID (ej: 1)
+        Integer idNegocio = negocioService.obtenerIdPorCodigo(codigo);
+
+        if (idNegocio != null) {
+            return ResponseEntity.ok(idNegocio); // 200 OK: Devuelve el ID 1
+        } else {
+            return ResponseEntity.notFound().build(); // 404: No existe ese código
+        }
+    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarNegocio(@PathVariable Integer id) {

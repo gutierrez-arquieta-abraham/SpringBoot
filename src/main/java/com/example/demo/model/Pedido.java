@@ -5,7 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Data
 @AllArgsConstructor
@@ -16,8 +17,8 @@ import java.util.Date;
 public class Pedido {
 
     @Id
-    @Column(name = "num_ord")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "Num_ord")
     private Integer numOrd;
 
     @Column(name = "descripcion")
@@ -26,23 +27,27 @@ public class Pedido {
     @Column(name = "destino")
     private String destino;
 
-    // --- ESTA ES LA COLUMNA QUE FALTABA ---
+    // --- AGREGADO PARA QUE NO TE MARQUE ERROR EN EL SERVICE ---
+    @Column(name = "estatus")
+    private String estatus;
+    // ---------------------------------------------------------
+
+    // ESTE ES EL BUENO (EN_CURSO, ENTREGADO, ETC)
     @Column(name = "estado")
-    private String estado;
-    // --------------------------------------
+    private String estadoReal;
 
-    @Temporal(TemporalType.DATE)
-    @Column(name = "fecha_de_entrega")
-    private Date fechaDeEntrega;
+    @Column(name = "Fecha_de_entrega")
+    private LocalDate fechaEntrega;
 
-    @Temporal(TemporalType.TIME)
     @Column(name = "hora_de_entrega")
-    private Date horaDeEntrega;
+    private LocalTime horaEntrega;
 
+    // RELACIÓN CON NEGOCIO (Como lo tienes en tu último código)
     @ManyToOne
     @JoinColumn(name = "id_licencia", nullable = false)
     private Negocio negocio;
 
+    // RELACIÓN CON REPARTIDOR
     @ManyToOne
     @JoinColumn(name = "id_usuario_rep")
     private Usuario repartidorAsignado;

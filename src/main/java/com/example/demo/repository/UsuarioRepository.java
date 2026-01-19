@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
 
-    // Spring crea la consulta: "SELECT * FROM Usuario WHERE EMAIL = ?"
+    List<Usuario> findByRol_IdAndNegocio_IdLicencia(Integer rolId, Integer idLicencia);
     Optional<Usuario> findByEmail(String email);
     List<Usuario> findByNegocio_IdLicenciaAndRol_Rol(Integer idLicencia, String rol);
 

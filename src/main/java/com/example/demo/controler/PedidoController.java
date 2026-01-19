@@ -19,6 +19,7 @@ public class PedidoController {
     @Autowired
     private PedidoService pedidoService;
 
+
     // (POST /api/pedidos) - El Gestor crea un pedido
     @PostMapping
     public ResponseEntity<PedidoDto> crearPedido(@RequestBody Pedido nuevoPedido) {
@@ -35,18 +36,21 @@ public class PedidoController {
         return ResponseEntity.ok(pedidoService.asignarRepartidor(numOrd, idRepartidor));
     }
 
-    // (PUT /api/pedidos/10/estado/Entregado) - Actualiza estado de pedido 10
-    @PutMapping("/{numOrd}/estado/{nuevoEstado}")
-    public ResponseEntity<PedidoDto> actualizarEstado(
-            @PathVariable Integer numOrd,
-            @PathVariable String nuevoEstado) {
-        return ResponseEntity.ok(pedidoService.actualizarEstado(numOrd, nuevoEstado));
-    }
-
     // (GET /api/pedidos/repartidor/5) - El Repartidor 5 ve sus pedidos
     @GetMapping("/repartidor/{idRepartidor}")
     public ResponseEntity<List<PedidoDto>> getPedidosPorRepartidor(@PathVariable Integer idRepartidor) {
-        return ResponseEntity.ok(pedidoService.getPedidosPorRepartidor(idRepartidor));
+        return ResponseEntity.ok(pedidoService.obtenerPedidosPorRepartidor(idRepartidor));
+    }
+    // Endpoint: /api/pedidos/mis-pedidos?idRepartidor=5
+    @GetMapping("/mis-pedidos") // Usamos GET porque estamos "pidiendo" datos
+    public ResponseEntity<List<PedidoDto>> obtenerMisPedidos(@RequestParam Integer idRepartidor) {
+
+        List<PedidoDto> pedidos = pedidoService.obtenerPedidosPorRepartidor(idRepartidor);
+
+        if (pedidos.isEmpty()) {
+            return ResponseEntity.noContent().build(); // Devuelve 204 si no hay nada
+        }
+        return ResponseEntity.ok(pedidos); // Devuelve 200 y la lista
     }
 
     // (GET /api/pedidos/negocio/1) - El Gestor del Negocio 1 ve sus pedidos
@@ -73,4 +77,22 @@ public class PedidoController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    // Solo debe existir UNO como este:
+    @PostMapping("/actualizar-estado")
+    public ResponseEntity<PedidoDto> actualizarEstado(
+            @RequestParam Integer numOrd,
+            @RequestParam String nuevoEstado) {
+        return ResponseEntity.ok(pedidoService.actualizarEstado(numOrd, nuevoEstado));
+    }
+    // --- NUEVO ENDPOINT: Historial Global para el Gestor ---
+    @GetMapping("/negocio/{idLicencia}/historial")
+    public ResponseEntity<List<PedidoDto>> getHistorialNegocio(@PathVariable Integer idLicencia) {
+        return ResponseEntity.ok(pedidoService.obtenerHistorialNegocio(idLicencia));
+    }
+    @GetMapping("/repartidor/{id}/historial")
+    public ResponseEntity<List<PedidoDto>> getHistorialRepartidor(@PathVariable Integer id) {
+        List<PedidoDto> historial = pedidoService.obtenerHistorialRepartidor(id);
+        return ResponseEntity.ok(historial);
+    }
 }

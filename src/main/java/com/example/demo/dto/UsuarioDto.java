@@ -1,17 +1,21 @@
 package com.example.demo.dto;
 
 import lombok.Data;
-// (Agrega otras anotaciones de lombok si las usas)
 
 @Data
 public class UsuarioDto {
-
     private Integer id;
     private String nombre;
     private String email;
     private String rfc;
-    private String rol; // Solo el nombre del rol, no el objeto entero
-    private Integer idLicencia; // El ID del negocio al que pertenece
+    private String estatus;
 
-    // ¡NUNCA INCLUIMOS LA CONTRASEÑA AQUÍ!
+    // --- AGREGAMOS ESTOS DOS PARA QUE NO FALLE ---
+    private String rol;    // Para el texto "GESTOR" o "REPARTIDOR" (Corrige el error del Controller)
+    private Integer rolId; // Para el ID numérico (1 o 2)
+
+    private Integer idLicencia;
+
+    private Double latitudActual;
+    private Double longitudActual;
 }

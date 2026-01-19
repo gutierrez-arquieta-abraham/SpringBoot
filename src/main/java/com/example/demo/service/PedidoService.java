@@ -6,20 +6,24 @@ import java.util.List;
 
 public interface PedidoService {
 
-    // El Gestor crea un pedido (recibe el modelo, devuelve DTO)
-    PedidoDto crearPedido(Pedido nuevoPedido);
+    PedidoDto crearPedido(Pedido pedido);
 
-    // El Gestor asigna un pedido a un repartidor
     PedidoDto asignarRepartidor(Integer numOrd, Integer idRepartidor);
 
-    // El Repartidor actualiza el estado (ej: "Entregado")
+    // --- 👇 ESTA ES LA LÍNEA QUE TE FALTABA Y CAUSA EL ERROR 👇 ---
+    PedidoDto actualizarEstatus(Integer idPedido, String nuevoEstatus);
+    // --------------------------------------------------------------
+    List<PedidoDto> obtenerHistorialRepartidor(Integer idRepartidor);
+    List<PedidoDto> obtenerHistorialNegocio(Integer idLicencia);
+
+    // Este lo dejamos por si alguna parte vieja de tu código lo llama
     PedidoDto actualizarEstado(Integer numOrd, String nuevoEstado);
 
-    // El Repartidor ve sus pedidos
-    List<PedidoDto> getPedidosPorRepartidor(Integer idRepartidor);
+    List<PedidoDto> obtenerPedidosPorRepartidor(Integer idRepartidor);
 
-    // El Gestor ve todos los pedidos de su negocio
     List<PedidoDto> getPedidosPorNegocio(Integer idLicencia);
-    PedidoDto actualizarPedido(Integer numOrd, PedidoDto pedidoDto);
+
     void eliminarPedido(Integer numOrd);
+
+    PedidoDto actualizarPedido(Integer numOrd, PedidoDto dto);
 }

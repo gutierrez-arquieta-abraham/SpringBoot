@@ -1,0 +1,17 @@
+package com.example.demo.repository;
+
+import com.example.demo.model.UbicacionPedido;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying; // Importante
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional; // Importante
+
+@Repository
+public interface UbicacionPedidoRepository extends JpaRepository<UbicacionPedido, Long> {
+
+    // --- AGREGAR ESTO ---
+    @Modifying
+    @Transactional
+    void deleteByPedido_NumOrd(Integer numOrd);
+    // "Borrar donde el NumOrd del Pedido coincida"
+}
