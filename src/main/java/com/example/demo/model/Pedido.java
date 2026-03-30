@@ -1,11 +1,16 @@
 package com.example.demo.model;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Data
@@ -21,28 +26,30 @@ public class Pedido {
     @Column(name = "Num_ord")
     private Integer numOrd;
 
+    @NotBlank(message = "La descripción no puede estar vacía ni ser nula")
     @Column(name = "descripcion")
     private String descripcion;
 
+    @NotBlank(message = "El destino es obligatorio")
     @Column(name = "destino")
     private String destino;
-
-    // --- AGREGADO PARA QUE NO TE MARQUE ERROR EN EL SERVICE ---
-    @Column(name = "estatus")
-    private String estatus;
-    // ---------------------------------------------------------
 
     // ESTE ES EL BUENO (EN_CURSO, ENTREGADO, ETC)
     @Column(name = "estado")
     private String estadoReal;
 
-    @Column(name = "Fecha_de_entrega")
-    private LocalDate fechaEntrega;
+    @CreationTimestamp
+    @Column(name = "fecha_hora_creacion", updatable = false)
+    private LocalDateTime fechaHoraCreacion;
 
-    @Column(name = "hora_de_entrega")
-    private LocalTime horaEntrega;
+    @Column(name = "fecha_hora_recogida")
+    private LocalDateTime fechaHoraRecogida;
+
+    @Column(name = "fecha_hora_entrega")
+    private LocalDateTime fechaHoraEntrega;
 
     // RELACIÓN CON NEGOCIO (Como lo tienes en tu último código)
+    @NotNull(message = "El pedido debe estar asociado a un negocio")
     @ManyToOne
     @JoinColumn(name = "id_licencia", nullable = false)
     private Negocio negocio;

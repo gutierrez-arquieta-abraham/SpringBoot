@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.EstadisticasPedidoDto;
 import com.example.demo.dto.PedidoDto;
 import com.example.demo.model.Pedido;
 import java.util.List;
@@ -16,6 +17,7 @@ public interface PedidoService {
     List<PedidoDto> obtenerHistorialRepartidor(Integer idRepartidor);
     List<PedidoDto> obtenerHistorialNegocio(Integer idLicencia);
 
+    EstadisticasPedidoDto obtenerEstadisticas(Integer numOrd);
     // Este lo dejamos por si alguna parte vieja de tu código lo llama
     PedidoDto actualizarEstado(Integer numOrd, String nuevoEstado);
 

@@ -23,4 +23,6 @@ public interface PedidoRepository extends JpaRepository<Pedido, Integer> {
     List<Pedido> findByNegocio_IdLicencia(Integer idLicencia);
     @Query(value = "SELECT * FROM pedidos WHERE ID_USUARIO_REP = :idRepartidor", nativeQuery = true)
     List<Pedido> encontrarPedidosDeRepartidor(@Param("idRepartidor") Integer idRepartidor);
+
+
 }

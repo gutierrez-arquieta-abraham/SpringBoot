@@ -1,5 +1,6 @@
 package com.example.demo.controler;
 
+import com.example.demo.dto.EstadisticasPedidoDto;
 import com.example.demo.dto.PedidoDto;
 import com.example.demo.model.Pedido;
 import com.example.demo.repository.PedidoRepository;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import jakarta.validation.Valid;
 import com.example.demo.model.Usuario;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +24,7 @@ public class PedidoController {
 
     // (POST /api/pedidos) - El Gestor crea un pedido
     @PostMapping
-    public ResponseEntity<PedidoDto> crearPedido(@RequestBody Pedido nuevoPedido) {
+    public ResponseEntity<PedidoDto> crearPedido(@Valid @RequestBody Pedido nuevoPedido) {
         // El JSON debe traer: "descripcion", "destino" y "negocio": { "idLicencia": 1 }
         return ResponseEntity.ok(pedidoService.crearPedido(nuevoPedido));
     }
@@ -94,5 +96,9 @@ public class PedidoController {
     public ResponseEntity<List<PedidoDto>> getHistorialRepartidor(@PathVariable Integer id) {
         List<PedidoDto> historial = pedidoService.obtenerHistorialRepartidor(id);
         return ResponseEntity.ok(historial);
+    }
+    @GetMapping("/{numOrd}/estadisticas")
+    public ResponseEntity<EstadisticasPedidoDto> obtenerEstadisticas(@PathVariable Integer numOrd) {
+        return ResponseEntity.ok((EstadisticasPedidoDto) pedidoService.obtenerEstadisticas(numOrd));
     }
 }

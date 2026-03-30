@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Modifying; // Importante
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional; // Importante
 
+import java.util.List;
+
 @Repository
 public interface UbicacionPedidoRepository extends JpaRepository<UbicacionPedido, Long> {
 
@@ -14,4 +16,5 @@ public interface UbicacionPedidoRepository extends JpaRepository<UbicacionPedido
     @Transactional
     void deleteByPedido_NumOrd(Integer numOrd);
     // "Borrar donde el NumOrd del Pedido coincida"
+    List<UbicacionPedido> findByPedido_NumOrdOrderByTimestampAsc(Integer numOrd);
 }

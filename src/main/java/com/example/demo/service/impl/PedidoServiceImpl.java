@@ -2,6 +2,7 @@ package com.example.demo.service.impl;
 
 import com.example.demo.dto.PedidoDto;
 import com.example.demo.model.Negocio;
+import com.example.demo.dto.EstadisticasPedidoDto;
 import com.example.demo.model.Pedido;
 import com.example.demo.model.Usuario;
 import com.example.demo.repository.NegocioRepository;
@@ -12,9 +13,11 @@ import com.example.demo.service.PedidoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional; // Importación única
+import java.time.Duration;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import com.example.demo.model.UbicacionPedido;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,7 +48,6 @@ public class PedidoServiceImpl implements PedidoService {
 
         // Estado inicial obligatorio: PENDIENTE
         nuevoPedido.setEstadoReal("PENDIENTE");
-        nuevoPedido.setEstatus("PENDIENTE");
 
         Pedido pedidoGuardado = pedidoRepository.save(nuevoPedido);
 
@@ -84,7 +86,6 @@ public class PedidoServiceImpl implements PedidoService {
         if (mejorCandidato != null) {
             pedido.setRepartidorAsignado(mejorCandidato);
             pedido.setEstadoReal("EN_CURSO"); // OJO: Si usas esto, cambia a EN_CURSO
-            pedido.setEstatus("EN_CURSO");
 
             mejorCandidato.setEstatus("OCUPADO");
             usuarioRepository.save(mejorCandidato);
@@ -103,7 +104,6 @@ public class PedidoServiceImpl implements PedidoService {
         pedido.setRepartidorAsignado(repartidor);
         // Cuando tú lo asignas manualmente, pasa a EN_CAMINO
         pedido.setEstadoReal("EN_CAMINO");
-        pedido.setEstatus("EN_CAMINO");
 
         repartidor.setEstatus("OCUPADO");
         usuarioRepository.save(repartidor);
@@ -117,11 +117,9 @@ public class PedidoServiceImpl implements PedidoService {
                 .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
 
         pedido.setEstadoReal(nuevoEstatus);
-        pedido.setEstatus(nuevoEstatus);
 
         if ("ENTREGADO".equalsIgnoreCase(nuevoEstatus)) {
-            pedido.setFechaEntrega(LocalDate.now());
-            pedido.setHoraEntrega(LocalTime.now());
+            pedido.setFechaHoraEntrega(LocalDateTime.now());
 
             if (pedido.getRepartidorAsignado() != null) {
                 Usuario repartidor = pedido.getRepartidorAsignado();
@@ -188,6 +186,36 @@ public class PedidoServiceImpl implements PedidoService {
         return pedidos.stream().map(this::convertirADto).collect(Collectors.toList());
     }
 
+    public EstadisticasPedidoDto obtenerEstadisticas(Integer numOrd) {
+        Pedido pedido = pedidoRepository.findById(numOrd)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
+
+        // 1. Calcular el tiempo exacto
+        long minutos = 0;
+        if (pedido.getFechaHoraRecogida() != null && pedido.getFechaHoraEntrega() != null) {
+            minutos = Duration.between(pedido.getFechaHoraRecogida(), pedido.getFechaHoraEntrega()).toMinutes();
+        }
+
+        // 2. Calcular la distancia real sumando los puntos GPS
+        double distanciaTotal = 0.0;
+        // IMPORTANTE: Necesitas crear este método en tu UbicacionPedidoRepository para que ordene por tiempo
+        List<UbicacionPedido> ruta = ubicacionPedidoRepository.findByPedido_NumOrdOrderByTimestampAsc(numOrd);
+
+        if (ruta != null && ruta.size() > 1) {
+            for (int i = 0; i < ruta.size() - 1; i++) {
+                UbicacionPedido puntoA = ruta.get(i);
+                UbicacionPedido puntoB = ruta.get(i + 1);
+
+                distanciaTotal += calcularDistancia(
+                        puntoA.getLatitud(), puntoA.getLongitud(),
+                        puntoB.getLatitud(), puntoB.getLongitud()
+                );
+            }
+        }
+
+        return new EstadisticasPedidoDto(minutos, distanciaTotal);
+    }
+
     // --- CONVERSOR A DTO ---
     private PedidoDto convertirADto(Pedido pedido) {
         PedidoDto dto = new PedidoDto();
@@ -195,7 +223,6 @@ public class PedidoServiceImpl implements PedidoService {
         dto.setNumOrd(pedido.getNumOrd());
         dto.setDescripcion(pedido.getDescripcion());
         dto.setEstadoReal(pedido.getEstadoReal());
-        dto.setEstatus(pedido.getEstatus());
         dto.setDestino(pedido.getDestino());
 
         if (pedido.getNegocio() != null) {
@@ -210,8 +237,9 @@ public class PedidoServiceImpl implements PedidoService {
             dto.setLongitud(pedido.getRepartidorAsignado().getLongitudActual());
         }
 
-        if (pedido.getFechaEntrega() != null) dto.setFechaEntrega(pedido.getFechaEntrega().toString());
-        if (pedido.getHoraEntrega() != null) dto.setHoraEntrega(pedido.getHoraEntrega().toString());
+        dto.setFechaHoraCreacion(pedido.getFechaHoraCreacion());
+        dto.setFechaHoraRecogida(pedido.getFechaHoraRecogida());
+        dto.setFechaHoraEntrega(pedido.getFechaHoraEntrega());
 
         return dto;
     }
