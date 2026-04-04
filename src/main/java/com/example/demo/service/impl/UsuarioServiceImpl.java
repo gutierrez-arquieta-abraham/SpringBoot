@@ -34,7 +34,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public List<UsuarioDto> obtenerRepartidoresPorNegocio(Integer idLicencia) {
         // ROL_ID 2 = Repartidor
-        List<Usuario> repartidores = usuarioRepository.findByRol_IdAndNegocio_IdLicencia(2, idLicencia);
+        List<Usuario> repartidores = usuarioRepository.findByRol_IdAndNegocio_IdLicenciaAndActivoTrue(2, idLicencia);
         return repartidores.stream()
                 .map(this::convertirADto)
                 .collect(Collectors.toList());
@@ -42,7 +42,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public UsuarioDto vincularRepartidorPorCodigo(Integer idUsuario, String codigoConexion) {
-        Negocio negocio = negocioRepository.findByCodigoConexion(codigoConexion)
+        Negocio negocio = negocioRepository.findByCodigoConexionAndActivoTrue(codigoConexion)
                 .orElseThrow(() -> new RuntimeException("Código no válido o expirado."));
 
         Usuario repartidor = usuarioRepository.findById(idUsuario)
@@ -83,7 +83,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public UsuarioDto login(LoginDto loginDto) {
-        Usuario usuario = usuarioRepository.findByEmail(loginDto.getEmail())
+        Usuario usuario = usuarioRepository.findByEmailAndActivoTrue(loginDto.getEmail())
                 .orElseThrow(() -> new RuntimeException("Email o contraseña incorrectos"));
 
         if (passwordEncoder.matches(loginDto.getContrasena(), usuario.getContrasena())) {
@@ -102,6 +102,9 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioExistente.setEmail(usuarioDto.getEmail());
         usuarioExistente.setRfc(usuarioDto.getRfc());
 
+        // AGREGAR ESTO:
+        usuarioExistente.setTelefono(usuarioDto.getTelefono());
+
         Usuario actualizado = usuarioRepository.save(usuarioExistente);
         return convertirADto(actualizado);
     }
@@ -117,7 +120,13 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public void eliminarUsuario(Integer id) {
-        usuarioRepository.deleteById(id);
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // En lugar de borrarlo, lo desactivamos y lo ponemos fuera de servicio
+        usuario.setActivo(false);
+        usuario.setEstatus("FUERA_SERVICIO");
+        usuarioRepository.save(usuario);
     }
 
     @Override
@@ -212,6 +221,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         dto.setEstatus(usuario.getEstatus());
         dto.setLatitudActual(usuario.getLatitudActual());
         dto.setLongitudActual(usuario.getLongitudActual());
+        dto.setTelefono(usuario.getTelefono());
 
         if (usuario.getRol() != null) {
             dto.setRolId(usuario.getRol().getId());

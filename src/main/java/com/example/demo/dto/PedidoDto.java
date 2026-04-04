@@ -12,6 +12,10 @@ public class PedidoDto {
 
     // EL ÚNICO ESTADO QUE SOBREVIVE (Debe coincidir con la entidad)
     private String estadoReal;
+    private String nombreCliente;
+    private String telefonoCliente;
+    private Double latitudDestino;
+    private Double longitudDestino;
 
     // LA NUEVA MÉTRICA DE TIEMPOS ESTRICTA
     private LocalDateTime fechaHoraCreacion;

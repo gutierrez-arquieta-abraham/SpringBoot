@@ -9,6 +9,7 @@ public class UsuarioDto {
     private String email;
     private String rfc;
     private String estatus;
+    private String telefono;
 
     // --- AGREGAMOS ESTOS DOS PARA QUE NO FALLE ---
     private String rol;    // Para el texto "GESTOR" o "REPARTIDOR" (Corrige el error del Controller)

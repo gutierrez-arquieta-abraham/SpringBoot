@@ -35,4 +35,13 @@ public class Negocio {
 
     @Column(name = "codigo_conexion", unique = true)
     private String codigoConexion;
+
+    @Column(name = "latitud")
+    private Double latitud;
+
+    @Column(name = "longitud")
+    private Double longitud;
+
+    @Column(name = "activo")
+    private Boolean activo = true; // El default es 1 (true)
 }

@@ -29,7 +29,7 @@ public class NegocioServiceImpl implements NegocioService {
     @Override
     public Integer obtenerIdPorCodigo(String codigo) {
         // Buscamos el objeto Negocio por su código de licencia (VARCHAR)
-        Optional<Negocio> negocio = negocioRepository.findByCodigoLicencia(codigo);
+        Optional<Negocio> negocio = negocioRepository.findByCodigoLicenciaAndActivoTrue(codigo);
 
         // Si existe, devolvemos solo su ID. Si no, devolvemos null.
         return negocio.map(Negocio::getIdLicencia).orElse(null);
@@ -46,6 +46,9 @@ public class NegocioServiceImpl implements NegocioService {
         negocioExistente.setRfcEnc(negocioDto.getRfcEnc());
         negocioExistente.setDireccion(negocioDto.getDireccion());
         negocioExistente.setZonaCobertura(negocioDto.getZonaCobertura());
+
+        negocioExistente.setLatitud(negocioDto.getLatitud());
+        negocioExistente.setLongitud(negocioDto.getLongitud());
 
         // 2. GENERACIÓN AUTOMÁTICA DEL CÓDIGO DE REPARTIDOR (DIT-####-####-NG)
         // Esto es para que aparezca en la Pantalla 3
@@ -64,7 +67,7 @@ public class NegocioServiceImpl implements NegocioService {
         System.out.println("Buscando usuario con email: " + email);
 
         // 1. Buscar Usuario
-        Usuario usuario = usuarioRepository.findByEmail(email)
+        Usuario usuario = usuarioRepository.findByEmailAndActivoTrue(email)
                 .orElseThrow(() -> {
                     System.out.println("ERROR: Usuario no encontrado en la BD.");
                     return new RuntimeException("Usuario no encontrado");
@@ -82,7 +85,7 @@ public class NegocioServiceImpl implements NegocioService {
         // 2. Buscar Negocio (Usamos trim() para eliminar espacios invisibles)
         System.out.println("Buscando negocio con RFC_enc: '" + rfcUsuario.trim() + "'");
 
-        Negocio negocio = negocioRepository.findByRfcEnc(rfcUsuario.trim())
+        Negocio negocio = negocioRepository.findByRfcEncAndActivoTrue(rfcUsuario.trim())
                 .orElseThrow(() -> {
                     System.out.println("ERROR: No se encontró ningún negocio con ese RFC.");
                     return new RuntimeException("No se encontró negocio para el RFC: " + rfcUsuario);
@@ -125,13 +128,18 @@ public class NegocioServiceImpl implements NegocioService {
 
     @Override
     public void eliminarNegocio(Integer id) {
-        negocioRepository.deleteById(id);
+        Negocio negocio = negocioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Negocio no encontrado"));
+
+        // Solo lo desactivamos
+        negocio.setActivo(false);
+        negocioRepository.save(negocio);
     }
 
     // --- MÉTODO ANTIGUO DE VALIDACIÓN (Si lo necesitas) ---
     @Override
     public NegocioDto validarLicencia(String codigoLicencia) {
-        Negocio negocio = negocioRepository.findByCodigoLicencia(codigoLicencia)
+        Negocio negocio = negocioRepository.findByCodigoLicenciaAndActivoTrue(codigoLicencia)
                 .orElseThrow(() -> new RuntimeException("Licencia '" + codigoLicencia + "' no encontrada"));
         return convertirADto(negocio);
     }

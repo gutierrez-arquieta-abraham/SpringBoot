@@ -241,6 +241,10 @@ public class PedidoServiceImpl implements PedidoService {
         dto.setFechaHoraCreacion(pedido.getFechaHoraCreacion());
         dto.setFechaHoraRecogida(pedido.getFechaHoraRecogida());
         dto.setFechaHoraEntrega(pedido.getFechaHoraEntrega());
+        dto.setNombreCliente(pedido.getNombreCliente());
+        dto.setTelefonoCliente(pedido.getTelefonoCliente());
+        dto.setLatitudDestino(pedido.getLatitudDestino());
+        dto.setLongitudDestino(pedido.getLongitudDestino());
 
         return dto;
     }

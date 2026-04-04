@@ -11,4 +11,7 @@ public class NegocioDto {
     private Integer zonaCobertura; // <-- Ahora es Integer
     private String codigoLicencia;
     private String codigoConexion;
+    private Double latitud;
+    private Double longitud;
+
 }

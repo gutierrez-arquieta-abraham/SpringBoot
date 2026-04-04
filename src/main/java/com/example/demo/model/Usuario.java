@@ -40,6 +40,12 @@ public class Usuario // Renombramos la clase
     @Column(name = "longitud_actual")
     private Double longitudActual;
 
+    @Column(name = "telefono")
+    private String telefono;
+
+    @Column(name = "activo")
+    private Boolean activo = true;
+
     // --- ¡LA MAGIA OCURRE AQUÍ! ---
     // 1. Conexión al Rol (para saber si es Gestor o Repartidor)
     @ManyToOne

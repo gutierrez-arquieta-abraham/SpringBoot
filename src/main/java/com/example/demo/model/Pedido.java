@@ -48,6 +48,18 @@ public class Pedido {
     @Column(name = "fecha_hora_entrega")
     private LocalDateTime fechaHoraEntrega;
 
+    @Column(name = "nombre_cliente")
+    private String nombreCliente;
+
+    @Column(name = "telefono_cliente")
+    private String telefonoCliente;
+
+    @Column(name = "latitud_destino")
+    private Double latitudDestino;
+
+    @Column(name = "longitud_destino")
+    private Double longitudDestino;
+
     // RELACIÓN CON NEGOCIO (Como lo tienes en tu último código)
     @NotNull(message = "El pedido debe estar asociado a un negocio")
     @ManyToOne
