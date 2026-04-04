@@ -102,8 +102,10 @@ public class PedidoServiceImpl implements PedidoService {
                 .orElseThrow(() -> new RuntimeException("Repartidor no encontrado"));
 
         pedido.setRepartidorAsignado(repartidor);
-        // Cuando tú lo asignas manualmente, pasa a EN_CAMINO
         pedido.setEstadoReal("EN_CAMINO");
+
+        // 👇 EL CRONÓMETRO INICIA AQUÍ 👇
+        pedido.setFechaHoraRecogida(LocalDateTime.now());
 
         repartidor.setEstatus("OCUPADO");
         usuarioRepository.save(repartidor);
@@ -118,6 +120,10 @@ public class PedidoServiceImpl implements PedidoService {
 
         pedido.setEstadoReal(nuevoEstatus);
 
+        if ("EN_CAMINO".equalsIgnoreCase(nuevoEstatus) && pedido.getFechaHoraRecogida() == null) {
+            pedido.setFechaHoraRecogida(LocalDateTime.now());
+        }
+
         if ("ENTREGADO".equalsIgnoreCase(nuevoEstatus)) {
             pedido.setFechaHoraEntrega(LocalDateTime.now());
 
@@ -126,11 +132,6 @@ public class PedidoServiceImpl implements PedidoService {
                 repartidor.setEstatus("DISPONIBLE"); // Liberamos al repartidor
                 usuarioRepository.save(repartidor);
             }
-        }
-
-        // BORRAR RASTRO GPS (Ahora seguro gracias a @Transactional)
-        if ("ENTREGADO".equalsIgnoreCase(nuevoEstatus) || "COMPLETADO".equalsIgnoreCase(nuevoEstatus)) {
-            ubicacionPedidoRepository.deleteByPedido_NumOrd(idPedido);
         }
 
         return convertirADto(pedidoRepository.save(pedido));

@@ -99,6 +99,6 @@ public class PedidoController {
     }
     @GetMapping("/{numOrd}/estadisticas")
     public ResponseEntity<EstadisticasPedidoDto> obtenerEstadisticas(@PathVariable Integer numOrd) {
-        return ResponseEntity.ok((EstadisticasPedidoDto) pedidoService.obtenerEstadisticas(numOrd));
+        return ResponseEntity.ok(pedidoService.obtenerEstadisticas(numOrd));
     }
 }

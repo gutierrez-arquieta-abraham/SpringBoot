@@ -12,9 +12,7 @@ import java.util.List;
 public interface UbicacionPedidoRepository extends JpaRepository<UbicacionPedido, Long> {
 
     // --- AGREGAR ESTO ---
-    @Modifying
-    @Transactional
-    void deleteByPedido_NumOrd(Integer numOrd);
+
     // "Borrar donde el NumOrd del Pedido coincida"
     List<UbicacionPedido> findByPedido_NumOrdOrderByTimestampAsc(Integer numOrd);
 }
