@@ -60,6 +60,12 @@ public class Pedido {
     @Column(name = "longitud_destino")
     private Double longitudDestino;
 
+    @Column(name = "minutos_transcurridos")
+    private Long minutosTranscurridos;
+
+    @Column(name = "kilometros_recorridos")
+    private Double kilometrosRecorridos;
+
     // RELACIÓN CON NEGOCIO (Como lo tienes en tu último código)
     @NotNull(message = "El pedido debe estar asociado a un negocio")
     @ManyToOne

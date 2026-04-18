@@ -167,6 +167,8 @@ public class NegocioServiceImpl implements NegocioService {
         dto.setZonaCobertura(negocio.getZonaCobertura()); // Mapeo correcto del entero
         dto.setCodigoLicencia(negocio.getCodigoLicencia());
         dto.setCodigoConexion(negocio.getCodigoConexion());
+        dto.setLatitud(negocio.getLatitud());
+        dto.setLongitud(negocio.getLongitud());
         return dto;
     }
 }

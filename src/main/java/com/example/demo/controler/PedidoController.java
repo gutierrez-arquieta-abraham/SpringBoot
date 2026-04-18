@@ -1,6 +1,6 @@
 package com.example.demo.controler;
 
-import com.example.demo.dto.EstadisticasPedidoDto;
+import com.example.demo.dto.DashboardNegocioDto;
 import com.example.demo.dto.PedidoDto;
 import com.example.demo.model.Pedido;
 import com.example.demo.repository.PedidoRepository;
@@ -11,8 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import jakarta.validation.Valid;
-import com.example.demo.model.Usuario;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/pedidos")
@@ -98,7 +96,7 @@ public class PedidoController {
         return ResponseEntity.ok(historial);
     }
     @GetMapping("/{numOrd}/estadisticas")
-    public ResponseEntity<EstadisticasPedidoDto> obtenerEstadisticas(@PathVariable Integer numOrd) {
+    public ResponseEntity<DashboardNegocioDto> obtenerEstadisticas(@PathVariable Integer numOrd) {
         return ResponseEntity.ok(pedidoService.obtenerEstadisticas(numOrd));
     }
 }
