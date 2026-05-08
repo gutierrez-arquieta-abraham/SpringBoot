@@ -45,6 +45,18 @@ public class UsuarioController {
             @RequestBody UsuarioDto usuarioDto) {
         return ResponseEntity.ok(usuarioService.actualizarUsuario(id, usuarioDto));
     }
+    @PostMapping("/recuperar-password")
+    public ResponseEntity<Void> recuperarPassword(@RequestBody Map<String, String> datos) {
+        String email = datos.get("email");
+        String nuevaContrasena = datos.get("nuevaContrasena");
+
+        if (email == null || nuevaContrasena == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        usuarioService.recuperarContrasenaPorEmail(email, nuevaContrasena);
+        return ResponseEntity.ok().build();
+    }
     @PatchMapping("/cambiarContrasena/{id}")
     public ResponseEntity<Void> cambiarContrasena(
             @PathVariable Integer id,

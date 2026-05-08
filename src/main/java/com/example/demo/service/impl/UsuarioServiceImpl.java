@@ -108,6 +108,14 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario actualizado = usuarioRepository.save(usuarioExistente);
         return convertirADto(actualizado);
     }
+    // Agrega esto al final del archivo
+    public void recuperarContrasenaPorEmail(String email, String nuevaContrasena) {
+        Usuario usuario = usuarioRepository.findByEmailAndActivoTrue(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        usuario.setContrasena(passwordEncoder.encode(nuevaContrasena));
+        usuarioRepository.save(usuario);
+    }
 
     @Override
     public void actualizarContrasena(Integer id, String nuevaContrasena) {

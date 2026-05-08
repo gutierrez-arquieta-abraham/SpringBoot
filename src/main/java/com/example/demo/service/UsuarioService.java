@@ -31,6 +31,8 @@ public interface UsuarioService {
     void actualizarUbicacion(Integer idRepartidor, Double latitud, Double longitud);
     // --- ¡NUEVO! Cambia el estado del repartidor (Disponible, Descanso, etc.) ---
     void cambiarEstatus(Integer id, String nuevoEstatus);
+
+    void recuperarContrasenaPorEmail(String email, String nuevaContrasena);
     void actualizarUbicacionRepartidor(Integer idUsuario, Double lat, Double lon);
     List<UsuarioDto> obtenerRepartidoresPorNegocio(Integer idLicencia);
 }
