@@ -17,6 +17,7 @@ public interface PedidoService {
     List<PedidoDto> obtenerHistorialRepartidor(Integer idRepartidor);
     List<PedidoDto> obtenerHistorialNegocio(Integer idLicencia);
     DashboardNegocioDto generarDashboardAnalitico(Integer idLicencia);
+    DashboardNegocioDto generarDashboardAnaliticoRepartidor(Integer idRepartidor);
     DashboardNegocioDto obtenerEstadisticas(Integer numOrd);
     // Este lo dejamos por si alguna parte vieja de tu código lo llama
     PedidoDto actualizarEstado(Integer numOrd, String nuevoEstado);

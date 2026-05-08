@@ -12,6 +12,17 @@ public class EstadisticasController {
 
     @Autowired
     private PedidoService pedidoService;
+    // --- NUEVO ENDPOINT PARA EL REPARTIDOR ---
+    @GetMapping("/repartidor/{idUsuario}")
+    public ResponseEntity<DashboardNegocioDto> obtenerDashboardRepartidor(@PathVariable Integer idUsuario) {
+        try {
+            DashboardNegocioDto dashboard = pedidoService.generarDashboardAnaliticoRepartidor(idUsuario);
+            return ResponseEntity.ok(dashboard);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 
     @GetMapping("/negocio/{idLicencia}")
     public ResponseEntity<DashboardNegocioDto> obtenerDashboard(@PathVariable Integer idLicencia) {

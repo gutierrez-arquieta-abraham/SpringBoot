@@ -175,6 +175,7 @@ public class PedidoServiceImpl implements PedidoService {
         return actualizarEstatus(numOrd, nuevoEstado);
     }
 
+
     @Override
     public List<PedidoDto> obtenerPedidosPorRepartidor(Integer idRepartidor) {
         return pedidoRepository.findByRepartidorAsignadoIdAndEstadoReal(idRepartidor, "EN_CAMINO")
@@ -271,6 +272,48 @@ public class PedidoServiceImpl implements PedidoService {
                 // Si tienes un campo fecha, aquí deberías ordenarlo: .sorted(Comparator.comparing(Pedido::getFecha).reversed())
                 .limit(15)
                 .map(this::convertirADto) // Usa tu método existente que convierte Entidad a Dto
+                .collect(Collectors.toList());
+
+        dashboard.setHistorialReciente(ultimosPedidos);
+
+        return dashboard;
+    }
+
+    // --- ESTE ES EL NUEVO MÉTODO PARA EL REPARTIDOR ---
+    @Override
+    public DashboardNegocioDto generarDashboardAnaliticoRepartidor(Integer idRepartidor) {
+
+        // 1. EXTRAER DATOS: Usamos el query que ya tenías creado en el Repository
+        List<Pedido> pedidosDelRepartidor = pedidoRepository.findHistorialPorRepartidor(idRepartidor);
+
+        // 2. LIMPIEZA DE DATOS: Asegurarnos de que tiempos y kms sean mayores a 0
+        List<Pedido> pedidosValidos = pedidosDelRepartidor.stream()
+                .filter(p -> p.getMinutosTranscurridos() != null && p.getMinutosTranscurridos() > 0)
+                .filter(p -> p.getKilometrosRecorridos() != null && p.getKilometrosRecorridos() > 0)
+                .collect(Collectors.toList());
+
+        DashboardNegocioDto dashboard = new DashboardNegocioDto();
+        dashboard.setTotalPedidosEntregados(pedidosValidos.size());
+
+        if (pedidosValidos.isEmpty()) {
+            dashboard.setPromedioTiempoEntrega(0.0);
+            dashboard.setTotalKilometrosRecorridos(0.0);
+            dashboard.setHistorialReciente(Collections.emptyList());
+            return dashboard;
+        }
+
+        // 3. AGREGACIÓN: Suma total de kilómetros
+        double totalKm = pedidosValidos.stream().mapToDouble(Pedido::getKilometrosRecorridos).sum();
+        dashboard.setTotalKilometrosRecorridos(Math.round(totalKm * 100.0) / 100.0);
+
+        // Promedio de tiempo
+        double promedioTiempo = pedidosValidos.stream().mapToDouble(Pedido::getMinutosTranscurridos).average().orElse(0.0);
+        dashboard.setPromedioTiempoEntrega(Math.round(promedioTiempo * 100.0) / 100.0);
+
+        // 4. MUESTRA: Últimos 15 pedidos para la gráfica
+        List<PedidoDto> ultimosPedidos = pedidosValidos.stream()
+                .limit(15)
+                .map(this::convertirADto)
                 .collect(Collectors.toList());
 
         dashboard.setHistorialReciente(ultimosPedidos);
