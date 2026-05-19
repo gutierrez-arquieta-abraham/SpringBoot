@@ -1,7 +1,7 @@
 package com.example.demo.controler;
 
 import com.example.demo.dto.NegocioDto;
-import com.example.demo.model.Negocio;
+// Ya no necesitamos importar la entidad Negocio aquí. ¡Capa limpia!
 import com.example.demo.service.NegocioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,16 +15,17 @@ public class NegocioController {
     @Autowired
     private NegocioService negocioService;
 
-    // --- NUEVO ENDPOINT PARA VALIDAR ---
-    // GET /api/negocios/validar/DIT-XXXX-XXXX-PL
+    // --- ENDPOINT PARA VALIDAR ---
     @GetMapping("/validar/{codigo}")
     public ResponseEntity<NegocioDto> validarLicencia(@PathVariable String codigo) {
         return ResponseEntity.ok(negocioService.validarLicencia(codigo));
     }
 
+    // --- AQUÍ ESTABA EL ERROR ---
+    // Antes recibía @RequestBody Negocio negocio. Ahora recibe estrictamente el DTO.
     @PostMapping
-    public ResponseEntity<NegocioDto> crearNegocio(@RequestBody Negocio negocio) {
-        return ResponseEntity.ok(negocioService.crearNegocio(negocio));
+    public ResponseEntity<NegocioDto> crearNegocio(@RequestBody NegocioDto negocioDto) {
+        return ResponseEntity.ok(negocioService.crearNegocio(negocioDto));
     }
 
     @GetMapping("/{id}")
@@ -43,6 +44,7 @@ public class NegocioController {
             @RequestBody NegocioDto negocioDto) {
         return ResponseEntity.ok(negocioService.actualizarNegocio(id, negocioDto));
     }
+
     @GetMapping("/propietario")
     public ResponseEntity<NegocioDto> getNegocioPorEmail(@RequestParam String email) {
         try {
@@ -53,15 +55,14 @@ public class NegocioController {
             return ResponseEntity.notFound().build();
         }
     }
+
     @GetMapping("/codigo/{codigo}")
     public ResponseEntity<Integer> validarCodigoLicencia(@PathVariable String codigo) {
-        // El servicio busca el VARCHAR "DIT-..." y nos da el ID (ej: 1)
         Integer idNegocio = negocioService.obtenerIdPorCodigo(codigo);
-
         if (idNegocio != null) {
-            return ResponseEntity.ok(idNegocio); // 200 OK: Devuelve el ID 1
+            return ResponseEntity.ok(idNegocio);
         } else {
-            return ResponseEntity.notFound().build(); // 404: No existe ese código
+            return ResponseEntity.notFound().build();
         }
     }
 

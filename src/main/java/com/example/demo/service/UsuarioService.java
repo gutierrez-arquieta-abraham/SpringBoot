@@ -2,37 +2,27 @@ package com.example.demo.service;
 
 import com.example.demo.dto.LoginDto;
 import com.example.demo.dto.UsuarioDto;
-import com.example.demo.model.Usuario;
-
 import java.util.List;
 
 public interface UsuarioService {
-
-    // --- Métodos de Autenticación y Registro ---
-    UsuarioDto registrarUsuario(Usuario nuevoUsuario, String nombreRol);
-
+    // Autenticación y Registro estricto con DTO
+    UsuarioDto registrarUsuario(UsuarioDto nuevoUsuarioDto, String nombreRol);
     UsuarioDto login(LoginDto loginDto);
 
-    // --- Métodos de CRUD y Gestión ---
+    // CRUD
     UsuarioDto getUsuarioById(Integer id);
-
     UsuarioDto actualizarUsuario(Integer id, UsuarioDto usuarioDto);
-
-    void actualizarContrasena(Integer id, String nuevaContrasena);
-
     void eliminarUsuario(Integer id);
 
-    // --- Métodos de Lógica de Negocio ---
+    // Gestión de credenciales
+    void actualizarContrasena(Integer id, String nuevaContrasena);
+    void recuperarContrasenaPorEmail(String email, String nuevaContrasena);
 
-    // Vincula un repartidor/gestor a un negocio específico
+    // Lógica de Negocio
     void vincularNegocio(Integer idUsuario, Integer idLicencia);
     UsuarioDto vincularRepartidorPorCodigo(Integer idUsuario, String codigoConexion);
     UsuarioDto actualizarEstatus(Integer idUsuario, String nuevoEstatus);
     void actualizarUbicacion(Integer idRepartidor, Double latitud, Double longitud);
-    // --- ¡NUEVO! Cambia el estado del repartidor (Disponible, Descanso, etc.) ---
-    void cambiarEstatus(Integer id, String nuevoEstatus);
 
-    void recuperarContrasenaPorEmail(String email, String nuevaContrasena);
-    void actualizarUbicacionRepartidor(Integer idUsuario, Double lat, Double lon);
     List<UsuarioDto> obtenerRepartidoresPorNegocio(Integer idLicencia);
 }

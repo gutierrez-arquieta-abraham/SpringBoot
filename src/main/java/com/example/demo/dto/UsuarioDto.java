@@ -10,13 +10,13 @@ public class UsuarioDto {
     private String rfc;
     private String estatus;
     private String telefono;
-
-    // --- AGREGAMOS ESTOS DOS PARA QUE NO FALLE ---
-    private String rol;    // Para el texto "GESTOR" o "REPARTIDOR" (Corrige el error del Controller)
-    private Integer rolId; // Para el ID numérico (1 o 2)
-
+    private String contrasenaTransitoria;
+    private String rol;
+    private Integer rolId;
     private Integer idLicencia;
-
     private Double latitudActual;
     private Double longitudActual;
+
+    // --- EL NUEVO CAMPO PARA EL TOKEN ---
+    private String token;
 }

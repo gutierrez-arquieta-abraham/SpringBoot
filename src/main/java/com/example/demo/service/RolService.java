@@ -1,10 +1,10 @@
 package com.example.demo.service;
 
-import com.example.demo.model.Rol;
+import com.example.demo.dto.RolDto;
 
 public interface RolService {
-    // Definimos un servicio para crear el rol
-    Rol crearRol(Rol rol);
-    Rol actualizarRol(Integer id, Rol rolDetalles);
+    // REGLA: Nada de entidades puras. Todo transita como DTO.
+    RolDto crearRol(RolDto rolDto);
+    RolDto actualizarRol(Integer id, RolDto rolDetalles);
     void eliminarRol(Integer id);
 }

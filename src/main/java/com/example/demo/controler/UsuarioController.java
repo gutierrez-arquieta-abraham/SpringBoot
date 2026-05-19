@@ -2,7 +2,6 @@ package com.example.demo.controler;
 
 import com.example.demo.dto.LoginDto;
 import com.example.demo.dto.UsuarioDto;
-import com.example.demo.model.Usuario; // O un "RegistroDto" si lo prefieres
 import com.example.demo.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,26 +16,26 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
+
     @PostMapping("/login")
     public ResponseEntity<UsuarioDto> login(@RequestBody LoginDto loginDto) {
-
         try {
-            UsuarioDto usuarioDto = usuarioService.login(loginDto);
-            return ResponseEntity.ok(usuarioDto);
+            return ResponseEntity.ok(usuarioService.login(loginDto));
         } catch (RuntimeException e) {
             e.printStackTrace();
             return ResponseEntity.status(401).build();
         }
     }
+
+    // --- CORRECCIÓN 1: Ahora recibe UsuarioDto estricto ---
     @PostMapping("/registrar/repartidor")
-    public ResponseEntity<UsuarioDto> registrarRepartidor(@RequestBody Usuario nuevoUsuario) {
-        UsuarioDto usuarioDto = usuarioService.registrarUsuario(nuevoUsuario, "REPARTIDOR");
-        return ResponseEntity.ok(usuarioDto);
+    public ResponseEntity<UsuarioDto> registrarRepartidor(@RequestBody UsuarioDto nuevoUsuarioDto) {
+        return ResponseEntity.ok(usuarioService.registrarUsuario(nuevoUsuarioDto, "REPARTIDOR"));
     }
+
     @PostMapping("/registrar/gestor")
-    public ResponseEntity<UsuarioDto> registrarGestor(@RequestBody Usuario nuevoUsuario) {
-        UsuarioDto usuarioDto = usuarioService.registrarUsuario(nuevoUsuario, "GESTOR");
-        return ResponseEntity.ok(usuarioDto);
+    public ResponseEntity<UsuarioDto> registrarGestor(@RequestBody UsuarioDto nuevoUsuarioDto) {
+        return ResponseEntity.ok(usuarioService.registrarUsuario(nuevoUsuarioDto, "GESTOR"));
     }
 
     @PutMapping("/{id}")
@@ -45,6 +44,7 @@ public class UsuarioController {
             @RequestBody UsuarioDto usuarioDto) {
         return ResponseEntity.ok(usuarioService.actualizarUsuario(id, usuarioDto));
     }
+
     @PostMapping("/recuperar-password")
     public ResponseEntity<Void> recuperarPassword(@RequestBody Map<String, String> datos) {
         String email = datos.get("email");
@@ -57,6 +57,7 @@ public class UsuarioController {
         usuarioService.recuperarContrasenaPorEmail(email, nuevaContrasena);
         return ResponseEntity.ok().build();
     }
+
     @PatchMapping("/cambiarContrasena/{id}")
     public ResponseEntity<Void> cambiarContrasena(
             @PathVariable Integer id,
@@ -75,55 +76,41 @@ public class UsuarioController {
         usuarioService.eliminarUsuario(id);
         return ResponseEntity.ok().build();
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<UsuarioDto> getUsuarioById(@PathVariable Integer id) {
-        UsuarioDto usuarioDto = usuarioService.getUsuarioById(id);
-        return ResponseEntity.ok(usuarioDto);
+        return ResponseEntity.ok(usuarioService.getUsuarioById(id));
     }
-    @PutMapping("/{id}/estatus/{nuevoEstatus}")
-    public ResponseEntity<Void> cambiarEstatus(
-            @PathVariable Integer id,
-            @PathVariable String nuevoEstatus) {
 
-        usuarioService.cambiarEstatus(id, nuevoEstatus);
-        return ResponseEntity.ok().build();
-    }
+    // CORRECCIÓN 2: Se eliminó el método redundante PUT cambiarEstatus.
+    // Tienes POST /actualizar-estatus haciendo esto mismo de forma oficial abajo.
+
     @GetMapping("/negocio/{idLicencia}/repartidores")
     public ResponseEntity<List<UsuarioDto>> getRepartidoresPorNegocio(@PathVariable Integer idLicencia) {
         return ResponseEntity.ok(usuarioService.obtenerRepartidoresPorNegocio(idLicencia));
     }
+
     @PostMapping("/vincular-equipo")
     public ResponseEntity<UsuarioDto> unirseAEquipo(@RequestParam Integer idUsuario, @RequestParam String codigo) {
         return ResponseEntity.ok(usuarioService.vincularRepartidorPorCodigo(idUsuario, codigo));
     }
+
     @PostMapping("/actualizar-estatus")
     public ResponseEntity<UsuarioDto> actualizarEstatus(
             @RequestParam Integer idUsuario,
             @RequestParam String nuevoEstatus) {
         return ResponseEntity.ok(usuarioService.actualizarEstatus(idUsuario, nuevoEstatus));
     }
+
     @PostMapping("/actualizar-ubicacion")
     public ResponseEntity<String> actualizarUbicacion(
             @RequestParam("idRepartidor") Integer idRepartidor,
             @RequestParam("latitud") Double latitud,
             @RequestParam("longitud") Double longitud
     ) {
-        // Llamamos al servicio que ya programamos antes (el que guarda historial)
         usuarioService.actualizarUbicacion(idRepartidor, latitud, longitud);
-
         return ResponseEntity.ok("Ubicación recibida correctamente");
     }
-    private UsuarioDto convertirAUsuarioDto(Usuario usuario) {
-        UsuarioDto dto = new UsuarioDto();
-        dto.setId(usuario.getId());
-        dto.setNombre(usuario.getNombre());
-        dto.setEmail(usuario.getEmail());
-        dto.setRol(usuario.getRol().getRol());
-        dto.setIdLicencia(usuario.getNegocio().getIdLicencia());
-        if (usuario.getRol() != null) {
-            dto.setRolId(usuario.getRol().getId());
-            dto.setRol(usuario.getRol().getRol());
-        }
-        return dto;
-    }
+
+    // CORRECCIÓN 3: Se purgó el método privado convertirAUsuarioDto()
 }

@@ -18,6 +18,6 @@ public class Rol
     @Column(name = "ROL_ID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(name = "ROL")
+    @Column(name = "ROL", unique = true)
     private String rol;
 }

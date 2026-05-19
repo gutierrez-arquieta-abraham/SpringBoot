@@ -1,6 +1,7 @@
 package com.example.demo.controler;
 
-import com.example.demo.model.Rol;
+import com.example.demo.dto.RolDto;
+// Importante: Ya no importamos com.example.demo.model.Rol;
 import com.example.demo.service.RolService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,25 +11,26 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/roles")
 public class RolController {
 
-    // --- ¡AQUÍ! ---
-    @Autowired // <-- ¿Está esto aquí?
+    @Autowired
     private RolService rolService;
 
+    // --- ARREGLO: Recibe y devuelve RolDto ---
     @PostMapping
-    public ResponseEntity<Rol> crearRol(@RequestBody Rol rol) {
-        // Si falta el @Autowired, rolService es NULL y esta línea truena
-        Rol rolGuardado = rolService.crearRol(rol);
+    public ResponseEntity<RolDto> crearRol(@RequestBody RolDto rolDto) {
+        RolDto rolGuardado = rolService.crearRol(rolDto);
         return ResponseEntity.ok(rolGuardado);
     }
+
+    // --- ARREGLO: Recibe y devuelve RolDto ---
     @PutMapping("/{id}")
-    public ResponseEntity<Rol> actualizarRol(@PathVariable Integer id, @RequestBody Rol rol) {
-        Rol rolActualizado = rolService.actualizarRol(id, rol);
+    public ResponseEntity<RolDto> actualizarRol(@PathVariable Integer id, @RequestBody RolDto rolDto) {
+        RolDto rolActualizado = rolService.actualizarRol(id, rolDto);
         return ResponseEntity.ok(rolActualizado);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarRol(@PathVariable Integer id) {
         rolService.eliminarRol(id);
-        return ResponseEntity.ok().build(); // Retorna 200 OK
+        return ResponseEntity.ok().build();
     }
 }

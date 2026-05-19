@@ -1,20 +1,27 @@
 package com.example.demo;
 
+import com.example.demo.security.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    @Autowired
+    private JwtFilter jwtFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -24,27 +31,32 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // 1. Tu configuración de CORS (déjala, está bien)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-                // 2. Tu línea de CSRF (déjala, está bien)
                 .csrf(csrf -> csrf.disable())
-
-                // 3. --- ¡¡¡EL CAMBIO ESTÁ AQUÍ!!! ---
                 .authorizeHttpRequests(authz -> authz
-                        // Le decimos: A CUALQUIER PETICIÓN, PERMÍTELA.
-                        .anyRequest().permitAll()
-                );
+                        // Endpoints libres de credenciales
+                        .requestMatchers("/api/usuarios/login").permitAll()
+                        .requestMatchers("/api/usuarios/registrar/**").permitAll()
+                        .requestMatchers("/api/usuarios/recuperar-password").permitAll()
+                        .requestMatchers("/api/negocios/validar/**").permitAll()
+                        .requestMatchers("/api/negocios/codigo/**").permitAll()
+                        // Todo lo demás requiere autenticación estricta
+                        .anyRequest().authenticated()
+                )
+                // Forzamos a que la arquitectura de Spring no guarde estados de sesión
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        // Clave: Ponemos nuestro filtro de JWT antes del validador por defecto de Spring
+        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // 4. Tu método de CORS (déjalo, está bien)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
