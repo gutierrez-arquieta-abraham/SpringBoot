@@ -44,9 +44,15 @@ public class NegocioServiceImpl implements NegocioService {
         negocioExistente.setLatitud(negocioDto.getLatitud());
         negocioExistente.setLongitud(negocioDto.getLongitud());
 
-        // Si por alguna razón se borró el código, lo regeneramos con la misma lógica unificada
-        if (negocioExistente.getCodigoConexion() == null || negocioExistente.getCodigoConexion().isEmpty()) {
+        // --- EL PARCHE OBLIGATORIO ---
+        // Forzamos a que si tiene un código con formato viejo, lo regenere con el nuevo estándar.
+        if (negocioExistente.getCodigoConexion() == null || !negocioExistente.getCodigoConexion().startsWith("DIT-")) {
             negocioExistente.setCodigoConexion(generarCodigoSeguro("NG"));
+        }
+
+        // De paso hacemos lo mismo con la licencia por si las moscas
+        if (negocioExistente.getCodigoLicencia() == null || !negocioExistente.getCodigoLicencia().startsWith("DIT-")) {
+            negocioExistente.setCodigoLicencia(generarCodigoSeguro("LC"));
         }
 
         return convertirADto(negocioRepository.save(negocioExistente));
