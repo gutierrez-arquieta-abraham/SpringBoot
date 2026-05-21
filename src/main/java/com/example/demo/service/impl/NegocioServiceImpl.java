@@ -44,13 +44,13 @@ public class NegocioServiceImpl implements NegocioService {
         negocioExistente.setLatitud(negocioDto.getLatitud());
         negocioExistente.setLongitud(negocioDto.getLongitud());
 
-        // --- EL PARCHE DEFINITIVO ---
-        // Forzamos a que si el código NO termina en -NG, lo aplaste y regenere
+        // --- AQUÍ ESTÁ LA MAGIA QUE DESTRUYE LA BASURA VIEJA ---
+        // Si el código NO termina en "-NG" (como el "-LC" que tienes atorado), lo reemplaza.
         if (negocioExistente.getCodigoConexion() == null || !negocioExistente.getCodigoConexion().endsWith("-NG")) {
             negocioExistente.setCodigoConexion(generarCodigoSeguro("NG"));
         }
 
-        // Blindamos también la licencia por si acaso
+        // Hacemos lo mismo con la licencia para evitar cruces
         if (negocioExistente.getCodigoLicencia() == null || !negocioExistente.getCodigoLicencia().endsWith("-LC")) {
             negocioExistente.setCodigoLicencia(generarCodigoSeguro("LC"));
         }
@@ -75,7 +75,6 @@ public class NegocioServiceImpl implements NegocioService {
 
     @Override
     public NegocioDto crearNegocio(NegocioDto negocioDto) {
-        // Convertimos el DTO a Entidad ANTES de tocar la base de datos
         Negocio nuevoNegocio = new Negocio();
         nuevoNegocio.setNomEmp(negocioDto.getNomEmp());
         nuevoNegocio.setRfcEnc(negocioDto.getRfcEnc());
@@ -85,7 +84,6 @@ public class NegocioServiceImpl implements NegocioService {
         nuevoNegocio.setLongitud(negocioDto.getLongitud());
         nuevoNegocio.setActivo(true);
 
-        // Estrategia de generación unificada
         nuevoNegocio.setCodigoLicencia(generarCodigoSeguro("LC"));
         nuevoNegocio.setCodigoConexion(generarCodigoSeguro("NG"));
 
@@ -101,7 +99,7 @@ public class NegocioServiceImpl implements NegocioService {
 
     @Override
     public List<NegocioDto> getAllNegocios() {
-        return negocioRepository.findByActivoTrue() // Usar solo los activos en lugar de findAll
+        return negocioRepository.findByActivoTrue() // Usar solo los activos
                 .stream()
                 .map(this::convertirADto)
                 .collect(Collectors.toList());
@@ -124,7 +122,7 @@ public class NegocioServiceImpl implements NegocioService {
 
     // --- MÉTODOS AUXILIARES CENTRALIZADOS ---
 
-    // Una sola fuente de verdad para los códigos. Nada de mezclar Math.random con UUID.
+    // Una sola fuente de verdad predecible para los códigos
     private String generarCodigoSeguro(String sufijo) {
         String randomStr = UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
         return "DIT-" + randomStr.substring(0, 4) + "-" + randomStr.substring(4, 8) + "-" + sufijo;
@@ -137,7 +135,6 @@ public class NegocioServiceImpl implements NegocioService {
         dto.setRfcEnc(negocio.getRfcEnc());
         dto.setDireccion(negocio.getDireccion());
 
-        // Manejo seguro de nulos al leer
         dto.setZonaCobertura(negocio.getZonaCobertura() != null ? negocio.getZonaCobertura() : 0);
         dto.setLatitud(negocio.getLatitud() != null ? negocio.getLatitud() : 0.0);
         dto.setLongitud(negocio.getLongitud() != null ? negocio.getLongitud() : 0.0);
