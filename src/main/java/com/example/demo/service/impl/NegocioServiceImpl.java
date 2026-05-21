@@ -44,14 +44,14 @@ public class NegocioServiceImpl implements NegocioService {
         negocioExistente.setLatitud(negocioDto.getLatitud());
         negocioExistente.setLongitud(negocioDto.getLongitud());
 
-        // --- EL PARCHE OBLIGATORIO ---
-        // Forzamos a que si tiene un código con formato viejo, lo regenere con el nuevo estándar.
-        if (negocioExistente.getCodigoConexion() == null || !negocioExistente.getCodigoConexion().startsWith("DIT-")) {
+        // --- EL PARCHE DEFINITIVO ---
+        // Forzamos a que si el código NO termina en -NG, lo aplaste y regenere
+        if (negocioExistente.getCodigoConexion() == null || !negocioExistente.getCodigoConexion().endsWith("-NG")) {
             negocioExistente.setCodigoConexion(generarCodigoSeguro("NG"));
         }
 
-        // De paso hacemos lo mismo con la licencia por si las moscas
-        if (negocioExistente.getCodigoLicencia() == null || !negocioExistente.getCodigoLicencia().startsWith("DIT-")) {
+        // Blindamos también la licencia por si acaso
+        if (negocioExistente.getCodigoLicencia() == null || !negocioExistente.getCodigoLicencia().endsWith("-LC")) {
             negocioExistente.setCodigoLicencia(generarCodigoSeguro("LC"));
         }
 
